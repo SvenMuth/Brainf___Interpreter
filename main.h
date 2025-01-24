@@ -5,8 +5,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define TOKEN_MOVE_RIGHT          '<'
-#define TOKEN_MOVE_LEFT           '>'
+#define TOKEN_MOVE_RIGHT          '>'
+#define TOKEN_MOVE_LEFT           '<'
 #define TOKEN_DISPLAY             '.'
 #define TOKEN_READ                ','
 #define TOKEN_ADD_ONE             '+'

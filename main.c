@@ -126,28 +126,22 @@ void progress_instructions(const char instruction, node_t** current_pos)
 
 void move_right(node_t** current_pos)
 {
-    if ((*current_pos)->next != nullptr)
-    {
-        *current_pos = (*current_pos)->next;
-    }
-    else
+    if ((*current_pos)->next == nullptr)
     {
         node_t* tmp = create_new_node(0);
-        insert_after_node((*current_pos)->next, tmp);
+        insert_after_node(*current_pos, tmp);
     }
+    *current_pos = (*current_pos)->next;
 }
 
 void move_left(node_t** current_pos)
 {
-    if ((*current_pos)->prev != nullptr)
-    {
-        *current_pos = (*current_pos)->prev;
-    }
-    else
+    if ((*current_pos)->prev == nullptr)
     {
         node_t* tmp = create_new_node(0);
-        insert_after_node((*current_pos)->prev, tmp);
+        insert_at_head(current_pos, tmp);
     }
+    *current_pos = (*current_pos)->prev;
 }
 
 void display(const node_t* current_pos)
@@ -213,6 +207,7 @@ int main(void)
     node_t* tmp = create_new_node(0);
 
     insert_at_head(&head, tmp);
+    node_t** current_node = &head;
 
     const char instructions[] = ", > , > ,. <. <.";
     for (int i = 0; i < strlen(instructions); i++)
@@ -223,7 +218,7 @@ int main(void)
         }
 
         printf("%c\n", instructions[i]);
-        progress_instructions(instructions[i], &head);
+        progress_instructions(instructions[i], current_node);
     }
 }
 
