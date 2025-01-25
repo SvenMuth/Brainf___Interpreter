@@ -29,9 +29,12 @@ int main(int argc, char** argv)
     char jump_to_token;
     bool is_jump_failed = true;
 
+    printf("STEP\t INSTRUCTION    VALUE\n");
+
     int c;
     while ((c = fgetc(fp)) != EOF)
     {
+        //TODO: Test jump instructions to verify that everything is implemented correctly
         if (!is_jump_failed)
         {
             if (jump_to_token == c)

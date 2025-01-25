@@ -19,7 +19,7 @@
 #include "list.h"
 
 
-void log_program(const char instruction, const char* message, const int value);
+void log_execution(const char instruction, const char* message, const int value);
 
 bool process_instruction(const char instruction, node_t** current_pos);
 void clear_stdin();

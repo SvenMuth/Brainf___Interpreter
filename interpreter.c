@@ -8,22 +8,23 @@
 #include "interpreter.h"
 
 
-void log_program(const char instruction, const char* message, const int value)
+void log_execution(const char instruction, const char* message, const int value)
 {
+    //TODO: Implement better format specifiers
     static int counter = 1;
     if (instruction == TOKEN_ADD_ONE)
     {
-        printf("(%d):\t \'%c\' -> %-15s: [%-3d ->   %d]\n",
+        printf("(%d) \t \'%c\' %-10s [%d -> %d]\n",
             counter, instruction, message, (value - 1), value);
     }
     else if (instruction == TOKEN_SUBTRACT_ONE)
     {
-        printf("(%d):\t \'%c\' -> %-15s: [%-3d ->   %d]\n",
+        printf("(%d) \t \'%c\' %-10s [%d -> %d]\n",
             counter, instruction, message, (value + 1), value);
     }
     else
     {
-        printf("(%d):\t \'%c\' -> %-15s: %d\n",
+        printf("(%d) \t \'%c\' %-10s %d\n",
             counter, instruction, message, value);
     }
 
@@ -36,50 +37,50 @@ bool process_instruction(const char instruction, node_t** current_pos)
     {
     case TOKEN_MOVE_RIGHT:
         move_right(current_pos);
-        log_program(TOKEN_MOVE_RIGHT,
-            "array pos now", (*current_pos)->index);
+        log_execution(TOKEN_MOVE_RIGHT,
+            "array pos", (*current_pos)->index);
         break;
 
     case TOKEN_MOVE_LEFT:
         move_left(current_pos);
-        log_program(TOKEN_MOVE_LEFT,
-            "array pos now", (*current_pos)->index);
+        log_execution(TOKEN_MOVE_LEFT,
+            "array pos", (*current_pos)->index);
         break;
 
     case TOKEN_DISPLAY:
-        log_program(TOKEN_DISPLAY,
+        log_execution(TOKEN_DISPLAY,
             "output", (*current_pos)->value);
         break;
 
     case TOKEN_READ:
         read(*current_pos);
-        log_program(TOKEN_READ,
+        log_execution(TOKEN_READ,
             "read in", (*current_pos)->value);
         break;
 
     case TOKEN_ADD_ONE:
         add(*current_pos);
-        log_program(TOKEN_ADD_ONE,
+        log_execution(TOKEN_ADD_ONE,
             "add", (*current_pos)->value);
         break;
 
     case TOKEN_SUBTRACT_ONE:
         subtract(*current_pos);
-        log_program(TOKEN_SUBTRACT_ONE,
+        log_execution(TOKEN_SUBTRACT_ONE,
             "subtract", (*current_pos)->value);
         break;
 
     case TOKEN_JUMP_IF_ZERO:
         if (!jump_if_zero(current_pos)) return false;
 
-        log_program(TOKEN_JUMP_IF_ZERO,
+        log_execution(TOKEN_JUMP_IF_ZERO,
             "jump to", (*current_pos)->index);
         break;
 
     case TOKEN_JUMP_IF_NOT_ZERO:
         if (!jump_if_not_zero(current_pos)) return false;
 
-        log_program(TOKEN_JUMP_IF_NOT_ZERO,
+        log_execution(TOKEN_JUMP_IF_NOT_ZERO,
             "jump to", (*current_pos)->index);
         break;
 
