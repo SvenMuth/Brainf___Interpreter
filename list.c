@@ -12,6 +12,7 @@ node_t* create_new_node(const int value)
     node_t* new_node = malloc(sizeof(node_t));
 
     new_node->value = value;
+    new_node->index = -1;
     new_node->next = nullptr;
     new_node->prev = nullptr;
 
@@ -20,13 +21,30 @@ node_t* create_new_node(const int value)
 
 node_t* insert_at_head(node_t** head, node_t* node_to_insert)
 {
+    bool is_first_item = false;
+    int old_head_pos;
+
     node_to_insert->next = *head;
-    if (*head != nullptr)
+
+    if (*head == nullptr)
     {
+        is_first_item = true;
+        node_to_insert->index = 0;
+    }
+    else
+    {
+        old_head_pos = (*head)->index;
         (*head)->prev = node_to_insert;
     }
+
     *head = node_to_insert;
     node_to_insert->prev = nullptr;
+
+    //set indes to the right value
+    if (!is_first_item)
+    {
+        (*head)->index = old_head_pos - 1;
+    }
 
     return node_to_insert;
 }
@@ -40,6 +58,19 @@ void insert_after_node(node_t* node_to_insert_after, node_t* new_node)
     }
     new_node->prev = node_to_insert_after;
     node_to_insert_after->next = new_node;
+
+
+    //set index to the right value
+    int node_to_insert_after_index = node_to_insert_after->index;
+    node_t* tmp = new_node;
+
+    while (tmp != nullptr)
+    {
+        node_to_insert_after_index++;
+        tmp->index = node_to_insert_after_index;
+
+        tmp = tmp->next;
+    }
 }
 
 node_t* find_node(node_t* head, const int value)
@@ -75,6 +106,7 @@ void free_list(node_t* head)
 
 void print_list(node_t* head)
 {
+    printf("value: ");
     node_t* tmp = head;
     while (tmp != nullptr)
     {
@@ -82,4 +114,29 @@ void print_list(node_t* head)
         tmp = tmp->next;
     }
     printf("\n\n");
+
+    printf("index: ");
+    tmp = head;
+    while (tmp != nullptr)
+    {
+        printf("%d - ", tmp->index);
+        tmp = tmp->next;
+    }
+    printf("\n\n");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

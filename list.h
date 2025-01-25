@@ -8,6 +8,7 @@
 typedef struct node
 {
     int value;
+    int index;
     struct node* next;
     struct node* prev;
 } node_t;

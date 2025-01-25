@@ -2,7 +2,6 @@
 #include <string.h>
 
 #include "main.h"
-#include "log.h"
 
 void log_program(const char* message)
 {
@@ -63,8 +62,8 @@ void process_instructions(const char instruction, node_t** current_pos)
     }
 
     snprintf(buffer, sizeof(buffer),
-        "  %c  |  %s %d", instruction, type, (*current_pos)->value);
-    log_program(buffer);
+        "  %c  |  %s %d %d", instruction, type, (*current_pos)->value, (*current_pos)->index);
+    //log_program(buffer);
 }
 
 void clear_stdin()
@@ -173,7 +172,10 @@ int main(void)
             continue;
         }
 
-        //printf("%c\n", instructions[i]);
         process_instructions(instructions[i], current_node);
+        //printf("%d\n", head->index);
     }
+
+    print_list(head);
+    free_list(head);
 }
