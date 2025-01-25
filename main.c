@@ -27,29 +27,30 @@ int main(int argc, char** argv)
     node_t** current_node = &head;
 
     char jump_to_token;
-    bool is_jump_failed = true;
+    bool is_jump_failed = false;
 
     printf("STEP\t INSTRUCTION    VALUE\n");
 
     int c;
     while ((c = fgetc(fp)) != EOF)
     {
-        //TODO: Test jump instructions to verify that everything is implemented correctly
-        if (!is_jump_failed)
-        {
-            if (jump_to_token == c)
-            {
-                is_jump_failed = true;
-            }
-            else
-            {
-                continue;
-            }
-        }
-
         if (c == NEW_LINE || c == SPACE_KEY)
         {
             continue;
+        }
+
+        //TODO: Test jump instructions to verify that everything is implemented correctly
+        if (is_jump_failed)
+        {
+            if (jump_to_token == c)
+            {
+                is_jump_failed = false;
+            }
+            else
+            {
+                //TODO: Add nodes for skipped instructions -> maybe link not executed instructions to node
+                continue;
+            }
         }
 
         if (!process_instruction(c, current_node))
@@ -62,8 +63,10 @@ int main(int argc, char** argv)
             {
                 jump_to_token = TOKEN_JUMP_IF_ZERO;
             }
-            is_jump_failed = false;
+            is_jump_failed = true;
         }
+
+        //printf("%c\n", c);
     }
 
     fclose(fp);

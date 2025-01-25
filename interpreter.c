@@ -14,17 +14,17 @@ void log_execution(const char instruction, const char* message, const int value)
     static int counter = 1;
     if (instruction == TOKEN_ADD_ONE)
     {
-        printf("(%d) \t \'%c\' %-10s [%d -> %d]\n",
+        printf("(%d) \t \'%c\' %-12s [%d -> %d]\n",
             counter, instruction, message, (value - 1), value);
     }
     else if (instruction == TOKEN_SUBTRACT_ONE)
     {
-        printf("(%d) \t \'%c\' %-10s [%d -> %d]\n",
+        printf("(%d) \t \'%c\' %-12s [%d -> %d]\n",
             counter, instruction, message, (value + 1), value);
     }
     else
     {
-        printf("(%d) \t \'%c\' %-10s %d\n",
+        printf("(%d) \t \'%c\' %-12s %d\n",
             counter, instruction, message, value);
     }
 
@@ -71,14 +71,22 @@ bool process_instruction(const char instruction, node_t** current_pos)
         break;
 
     case TOKEN_JUMP_IF_ZERO:
-        if (!jump_if_zero(current_pos)) return false;
-
-        log_execution(TOKEN_JUMP_IF_ZERO,
+        if (!jump_if_zero(current_pos))
+        {
+            log_execution(TOKEN_JUMP_IF_ZERO,
             "jump to", (*current_pos)->index);
+            return false;
+        }
+
+        //log_execution(TOKEN_JUMP_IF_ZERO,
+        //    "jump to", (*current_pos)->index);
         break;
 
     case TOKEN_JUMP_IF_NOT_ZERO:
-        if (!jump_if_not_zero(current_pos)) return false;
+        if (!jump_if_not_zero(current_pos))
+        {
+            return false;
+        }
 
         log_execution(TOKEN_JUMP_IF_NOT_ZERO,
             "jump to", (*current_pos)->index);
@@ -162,6 +170,11 @@ bool jump_if_zero(node_t** current_pos)
             }
         }
         *current_pos = tmp;
+    }
+    else
+    {
+        log_execution(TOKEN_JUMP_IF_ZERO,
+            "Jump failed", (*current_pos)->value);
     }
 
     return true;
