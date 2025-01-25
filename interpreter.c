@@ -30,9 +30,8 @@ void log_program(const char instruction, const char* message, const int value)
     counter++;
 }
 
-void process_instruction(const char instruction, node_t** current_pos)
+bool process_instruction(const char instruction, node_t** current_pos)
 {
-
     switch (instruction)
     {
     case TOKEN_MOVE_RIGHT:
@@ -71,13 +70,15 @@ void process_instruction(const char instruction, node_t** current_pos)
         break;
 
     case TOKEN_JUMP_IF_ZERO:
-        jump_if_zero(current_pos);
+        if (!jump_if_zero(current_pos)) return false;
+
         log_program(TOKEN_JUMP_IF_ZERO,
             "jump to", (*current_pos)->index);
         break;
 
     case TOKEN_JUMP_IF_NOT_ZERO:
-        jump_if_not_zero(current_pos);
+        if (!jump_if_not_zero(current_pos)) return false;
+
         log_program(TOKEN_JUMP_IF_NOT_ZERO,
             "jump to", (*current_pos)->index);
         break;
@@ -87,6 +88,8 @@ void process_instruction(const char instruction, node_t** current_pos)
         exit(EXIT_FAILURE);
         break;
     }
+
+    return true;
 }
 
 void clear_stdin()
@@ -139,26 +142,9 @@ void subtract(node_t* current_pos)
     current_pos->value -= 1;
 }
 
-void jump_if_zero(node_t** current_pos)
+bool jump_if_zero(node_t** current_pos)
 {
     if ((*current_pos)->value == 0)
-    {
-        node_t* tmp = *current_pos;
-        while (tmp != nullptr)
-        {
-            if (tmp->value == TOKEN_JUMP_IF_ZERO)
-            {
-                break;
-            }
-            tmp = tmp->next;
-        }
-        *current_pos = tmp;
-    }
-}
-
-void jump_if_not_zero(node_t** current_pos)
-{
-    if ((*current_pos)->value != 0)
     {
         node_t* tmp = *current_pos;
         while (tmp != nullptr)
@@ -167,8 +153,38 @@ void jump_if_not_zero(node_t** current_pos)
             {
                 break;
             }
-            tmp = tmp->prev;
+            tmp = tmp->next;
+
+            if (tmp == nullptr)
+            {
+                return false;
+            }
         }
         *current_pos = tmp;
     }
+
+    return true;
+}
+
+bool jump_if_not_zero(node_t** current_pos)
+{
+    if ((*current_pos)->value != 0)
+    {
+        node_t* tmp = *current_pos;
+        while (tmp != nullptr)
+        {
+            if (tmp->value == TOKEN_JUMP_IF_ZERO)
+            {
+                break;
+            }
+            tmp = tmp->prev;
+
+            if (tmp == nullptr)
+            {
+                return false;
+            }
+        }
+        *current_pos = tmp;
+    }
+    return true;
 }

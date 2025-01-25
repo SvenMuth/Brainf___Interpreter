@@ -21,7 +21,7 @@
 
 void log_program(const char instruction, const char* message, const int value);
 
-void process_instruction(const char instruction, node_t** current_pos);
+bool process_instruction(const char instruction, node_t** current_pos);
 void clear_stdin();
 
 void move_right(node_t** current_pos);
@@ -30,7 +30,7 @@ void read(node_t* current_pos);
 void add(node_t* current_pos);
 void subtract(node_t* current_pos);
 
-void jump_if_zero(node_t** current_pos);
-void jump_if_not_zero(node_t** current_pos);
+bool jump_if_zero(node_t** current_pos);
+bool jump_if_not_zero(node_t** current_pos);
 
 #endif //INTERPRETER_H

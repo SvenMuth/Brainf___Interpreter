@@ -26,21 +26,46 @@ int main(int argc, char** argv)
     insert_at_head(&head, tmp);
     node_t** current_node = &head;
 
+    char jump_to_token;
+    bool is_jump_failed = true;
+
     int c;
     while ((c = fgetc(fp)) != EOF)
     {
+        if (!is_jump_failed)
+        {
+            if (jump_to_token == c)
+            {
+                is_jump_failed = true;
+            }
+            else
+            {
+                continue;
+            }
+        }
+
         if (c == NEW_LINE || c == SPACE_KEY)
         {
             continue;
         }
 
-        process_instruction(c, current_node);
-        printf("%c\n", c);
+        if (!process_instruction(c, current_node))
+        {
+            if (c == TOKEN_JUMP_IF_ZERO)
+            {
+                jump_to_token = TOKEN_JUMP_IF_NOT_ZERO;
+            }
+            if (c == TOKEN_JUMP_IF_NOT_ZERO)
+            {
+                jump_to_token = TOKEN_JUMP_IF_ZERO;
+            }
+            is_jump_failed = false;
+        }
     }
 
     fclose(fp);
 
-    print_list(head);
+    //print_list(head);
     free_list(head);
 
     return EXIT_SUCCESS;
