@@ -4,17 +4,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "list.h"
 
 node_t* create_new_node(const int value)
 {
     node_t* new_node = malloc(sizeof(node_t));
-
-    new_node->value = value;
-    new_node->index = -1;
-    new_node->next = nullptr;
-    new_node->prev = nullptr;
+    *new_node = (node_t) {
+        .index = INT_MIN,
+        .next = nullptr,
+        .prev = nullptr,
+        .value = value,
+    };
 
     return new_node;
 }
@@ -22,7 +24,7 @@ node_t* create_new_node(const int value)
 node_t* insert_at_head(node_t** head, node_t* node_to_insert)
 {
     bool is_first_item = false;
-    int old_head_pos;
+    int old_head_pos = INT_MIN;
 
     node_to_insert->next = *head;
 
@@ -40,7 +42,7 @@ node_t* insert_at_head(node_t** head, node_t* node_to_insert)
     *head = node_to_insert;
     node_to_insert->prev = nullptr;
 
-    //set indes to the right value
+    //set index
     if (!is_first_item)
     {
         (*head)->index = old_head_pos - 1;
@@ -59,8 +61,7 @@ void insert_after_node(node_t* node_to_insert_after, node_t* new_node)
     new_node->prev = node_to_insert_after;
     node_to_insert_after->next = new_node;
 
-
-    //set index to the right value
+    //set index
     int node_to_insert_after_index = node_to_insert_after->index;
     node_t* tmp = new_node;
 

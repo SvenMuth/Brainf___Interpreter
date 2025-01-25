@@ -4,7 +4,8 @@ project(BrainfuckInterpreter C)
 set(CMAKE_C_STANDARD 23)
 
 add_executable(BrainfuckInterpreter main.c
-        main.h
         list.c
         list.h
+        interpreter.c
+        interpreter.h
 )
