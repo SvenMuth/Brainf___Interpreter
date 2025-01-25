@@ -3,71 +3,90 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "interpreter.h"
 
 
-void log_program(const char* message)
+void log_program(const char instruction, const char* message, const int value)
 {
     static int counter = 1;
-    printf("(%d): %s\n", counter, message);
+    if (instruction == TOKEN_ADD_ONE)
+    {
+        printf("(%d):\t \'%c\' -> %-15s: [%-3d ->   %d]\n",
+            counter, instruction, message, (value - 1), value);
+    }
+    else if (instruction == TOKEN_SUBTRACT_ONE)
+    {
+        printf("(%d):\t \'%c\' -> %-15s: [%-3d ->   %d]\n",
+            counter, instruction, message, (value + 1), value);
+    }
+    else
+    {
+        printf("(%d):\t \'%c\' -> %-15s: %d\n",
+            counter, instruction, message, value);
+    }
 
     counter++;
 }
 
-void process_instructions(const char instruction, node_t** current_pos)
+void process_instruction(const char instruction, node_t** current_pos)
 {
-    static char buffer[50];
-    static char* type;
+
     switch (instruction)
     {
     case TOKEN_MOVE_RIGHT:
         move_right(current_pos);
-        type = "array pos now: ";
+        log_program(TOKEN_MOVE_RIGHT,
+            "array pos now", (*current_pos)->index);
         break;
 
     case TOKEN_MOVE_LEFT:
         move_left(current_pos);
-        type = "array pos now: ";
+        log_program(TOKEN_MOVE_LEFT,
+            "array pos now", (*current_pos)->index);
         break;
 
     case TOKEN_DISPLAY:
-        display(*current_pos);
-        type = "output: ";
+        log_program(TOKEN_DISPLAY,
+            "output", (*current_pos)->value);
         break;
 
     case TOKEN_READ:
         read(*current_pos);
-        type = "read in: ";
+        log_program(TOKEN_READ,
+            "read in", (*current_pos)->value);
         break;
 
     case TOKEN_ADD_ONE:
         add(*current_pos);
-        type = "add: ";
+        log_program(TOKEN_ADD_ONE,
+            "add", (*current_pos)->value);
         break;
 
     case TOKEN_SUBTRACT_ONE:
         subtract(*current_pos);
-        type = "subtract: ";
+        log_program(TOKEN_SUBTRACT_ONE,
+            "subtract", (*current_pos)->value);
         break;
 
     case TOKEN_JUMP_IF_ZERO:
         jump_if_zero(current_pos);
-        type = "jump to: ";
+        log_program(TOKEN_JUMP_IF_ZERO,
+            "jump to", (*current_pos)->index);
         break;
 
     case TOKEN_JUMP_IF_NOT_ZERO:
         jump_if_not_zero(current_pos);
-        type = "jump to: ";
+        log_program(TOKEN_JUMP_IF_NOT_ZERO,
+            "jump to", (*current_pos)->index);
         break;
 
     default:
+        fprintf(stderr, "Invalid instruction occurred! -> \'%c\'", instruction);
+        exit(EXIT_FAILURE);
         break;
     }
-
-    snprintf(buffer, sizeof(buffer),
-        "  %c  |  %s %d %d", instruction, type, (*current_pos)->value, (*current_pos)->index);
-    //log_program(buffer);
 }
 
 void clear_stdin()
@@ -102,15 +121,10 @@ void move_left(node_t** current_pos)
     *current_pos = (*current_pos)->prev;
 }
 
-void display(const node_t* current_pos)
-{
-    const char value_char = (char)current_pos->value;
-}
-
 void read(node_t* current_pos)
 {
     printf("Input value: ");
-    current_pos->value = getchar();
+    current_pos->value = getchar() - '0';
 
     clear_stdin();
 }
