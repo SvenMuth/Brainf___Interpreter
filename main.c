@@ -4,6 +4,14 @@
 
 #include "interpreter.h"
 
+void clear_buffer(char* buffer)
+{
+    for (int i = 0; i < strlen(buffer); i++)
+    {
+        buffer[i] = 0;
+    }
+}
+
 
 int main(int argc, char** argv)
 {
@@ -29,6 +37,12 @@ int main(int argc, char** argv)
     char jump_to_token;
     bool is_jump_failed = false;
 
+    int buffer_index = 0;
+    char buffer_instructions[100];
+    clear_buffer(buffer_instructions);
+
+    bool store_instructions = false;
+
     printf("STEP\t INSTRUCTION    VALUE\n");
 
     int c;
@@ -48,25 +62,57 @@ int main(int argc, char** argv)
             }
             else
             {
-                //TODO: Add nodes for skipped instructions -> maybe link not executed instructions to node
-                continue;
+                //TODO: Add buffer for skipped instructions
+                //continue;
             }
         }
 
-        if (!process_instruction(c, current_node))
+        bool status = false;
+
+        if (!is_jump_failed)
         {
-            if (c == TOKEN_JUMP_IF_ZERO)
+            status = process_instruction(c, current_node);
+            if (!status)
             {
-                jump_to_token = TOKEN_JUMP_IF_NOT_ZERO;
+                if (c == TOKEN_JUMP_IF_ZERO)
+                {
+                    jump_to_token = TOKEN_JUMP_IF_NOT_ZERO;
+                }
+                if (c == TOKEN_JUMP_IF_NOT_ZERO)
+                {
+                    jump_to_token = TOKEN_JUMP_IF_ZERO;
+                }
+                is_jump_failed = true;
             }
-            if (c == TOKEN_JUMP_IF_NOT_ZERO)
-            {
-                jump_to_token = TOKEN_JUMP_IF_ZERO;
-            }
-            is_jump_failed = true;
         }
 
-        //printf("%c\n", c);
+        //Store instructions if TOKEN_JUMP_IF_NOT_ZERO is executed
+        if (status && c == TOKEN_JUMP_IF_ZERO || store_instructions)
+        {
+            if (c != TOKEN_JUMP_IF_ZERO && c != TOKEN_JUMP_IF_NOT_ZERO
+                || (c == TOKEN_JUMP_IF_NOT_ZERO && (*current_node)->value == 0))
+            {
+                buffer_instructions[buffer_index] = (char)c;
+                buffer_index++;
+            }
+
+            store_instructions = true;
+
+            if (c == TOKEN_JUMP_IF_NOT_ZERO && (*current_node)->value != 0)
+            {
+                process_instruction(TOKEN_JUMP_IF_NOT_ZERO, current_node);
+
+                buffer_index--;
+                for (;buffer_index >= 0; buffer_index--)
+                {
+                    process_instruction(buffer_instructions[buffer_index], current_node);
+                }
+
+                buffer_index = 0;
+                clear_buffer(buffer_instructions);
+                store_instructions = false;
+            }
+        }
     }
 
     fclose(fp);

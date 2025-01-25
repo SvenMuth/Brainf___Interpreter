@@ -93,7 +93,7 @@ bool process_instruction(const char instruction, node_t** current_pos)
         break;
 
     default:
-        fprintf(stderr, "Invalid instruction occurred! -> \'%c\'", instruction);
+        fprintf(stderr, "Invalid instruction occurred! -> \'%d\'", instruction);
         exit(EXIT_FAILURE);
         break;
     }
@@ -199,6 +199,11 @@ bool jump_if_not_zero(node_t** current_pos)
             }
         }
         *current_pos = tmp;
+    }
+    else
+    {
+        log_execution(TOKEN_JUMP_IF_NOT_ZERO,
+            "Jump failed", (*current_pos)->value);
     }
     return true;
 }
