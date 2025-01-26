@@ -91,6 +91,11 @@ void log_execution(const char instruction, const char* message, const int value)
         printf("(%d) \t \'%c\' %-18s [%d -> %d]\n",
             counter, instruction, message, (value + 1), value);
     }
+    else if (instruction == TOKEN_DISPLAY)
+    {
+        printf("(%d) \t \'%c\' %-18s [%d -> \'%c\']\n",
+            counter, instruction, message, value, (char)value);
+    }
     else
     {
         printf("(%d) \t \'%c\' %-18s %d\n",
