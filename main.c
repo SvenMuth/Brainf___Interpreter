@@ -8,7 +8,7 @@ int main(int argc, char** argv)
 {
     if (argc != 2)
     {
-        error_print("The wrong number of arguments has been passed!");
+        ERROR_PRINT("The wrong number of arguments has been passed!");
         return EXIT_FAILURE;
     }
 
@@ -24,9 +24,12 @@ int main(int argc, char** argv)
 
     node_t* head = init_tape();
 
-    printf("STEP\t INSTRUCTION    VALUE\n");
+    printf("STEP\t INSTRUCTION\t\t\tVALUE\n");
     bool is_jump_if_zero = false;
     bool is_jump_if_not_zero = false;
+
+    char buffer[1000];
+    int buffer_index = 0;
 
     for (int i = 0; i < file_data.index; i++)
     {
@@ -42,6 +45,12 @@ int main(int argc, char** argv)
         //return true if jump conditions are met
         const bool status_jump_execution =
             process_instruction(instruction, &head, is_jump_active);
+
+        if (instruction == TOKEN_DISPLAY)
+        {
+            buffer[buffer_index] = (char)head->value;
+            buffer_index++;
+        }
 
         if (status_jump_execution)
         {
@@ -78,6 +87,8 @@ int main(int argc, char** argv)
         }
 
     }
+    buffer[buffer_index] = 0;
+    printf("\nOutput: %s", buffer);
 
     //print_list(head);
     free_list(head);

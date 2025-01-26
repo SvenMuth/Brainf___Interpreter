@@ -8,7 +8,7 @@
 #include "list.h"
 
 #define TAPE_SIZE                 30000 // Fixed tape size for list
-#define STEP_SIZE                 1000 //Defines in which step the size of file_data_size is increased
+#define STEP_SIZE                 1000  //Defines in which step the size of file_data_size is increased
 
 #define TOKEN_MOVE_RIGHT          '>'   //62
 #define TOKEN_MOVE_LEFT           '<'   //60
@@ -21,7 +21,7 @@
 #define SPACE_KEY                 ' '   //32
 #define NEW_LINE                  '\n'  //10
 
-#define error_print(args ...)     fprintf(stderr, args)
+#define ERROR_PRINT(args ...)     fprintf(stderr, args)
 
 
 typedef struct file_data

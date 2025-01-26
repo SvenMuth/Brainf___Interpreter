@@ -22,10 +22,11 @@ void allocate_space(file_data_t* file_data)
     file_data->data = malloc(sizeof(int) * file_data->size);
     if (file_data->data == nullptr)
     {
-        error_print("Memory allocation failed!");
+        ERROR_PRINT("Memory allocation failed!");
         exit(EXIT_FAILURE);
     }
 }
+
 void realloc_space(file_data_t* file_data)
 {
     calculate_size(file_data);
@@ -33,7 +34,7 @@ void realloc_space(file_data_t* file_data)
     file_data->data = realloc(file_data->data,sizeof(int) * file_data->size);
     if (file_data->data == nullptr)
     {
-        error_print("Realloc failed!");
+        ERROR_PRINT("Realloc failed!");
         exit(EXIT_FAILURE);
     }
 }
@@ -61,7 +62,6 @@ file_data_t read_file_in_array(FILE* fp)
 
         if ((file_data.index + 1) % STEP_SIZE == 0)
         {
-            printf("%d\n", file_data.index);
             realloc_space(&file_data);
         }
     }
@@ -189,7 +189,7 @@ bool process_instruction(const char instruction, node_t** current_pos, const boo
         break;
 
     default:
-        error_print("Invalid instruction occurred! -> \'%d\'", instruction);
+        ERROR_PRINT("Invalid instruction occurred! -> \'%d\'", instruction);
         exit(EXIT_FAILURE);
         break;
     }
@@ -213,7 +213,7 @@ void move_right(node_t** current_pos)
 {
     if ((*current_pos)->next == nullptr)
     {
-        error_print("Current node is nullptr!");
+        ERROR_PRINT("Current node is nullptr!");
         exit(EXIT_FAILURE);
     }
     *current_pos = (*current_pos)->next;
@@ -223,7 +223,7 @@ void move_left(node_t** current_pos)
 {
     if ((*current_pos)->prev == nullptr)
     {
-        error_print("Current node is nullptr!");
+        ERROR_PRINT("Current node is nullptr!");
         exit(EXIT_FAILURE);
     }
     *current_pos = (*current_pos)->prev;
