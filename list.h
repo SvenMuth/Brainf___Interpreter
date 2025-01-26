@@ -19,6 +19,9 @@ void insert_after_node(node_t* node_to_insert_after, node_t* new_node);
 node_t* find_node(node_t* head, const int value);
 void remove_node(node_t** head, node_t* node_to_remove);
 void free_list(node_t* head);
+
 void print_list(node_t* head);
+void print_value(node_t* head);
+void print_index(node_t* head);
 
 #endif //LIST_H

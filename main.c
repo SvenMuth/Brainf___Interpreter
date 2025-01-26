@@ -1,23 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "interpreter.h"
-
-void clear_buffer(char* buffer)
-{
-    for (int i = 0; i < strlen(buffer); i++)
-    {
-        buffer[i] = 0;
-    }
-}
 
 
 int main(int argc, char** argv)
 {
     if (argc != 2)
     {
-        fprintf(stderr,"The wrong number of arguments has been passed!");
+        error_print("The wrong number of arguments has been passed!");
         return EXIT_FAILURE;
     }
 
@@ -28,97 +19,90 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    node_t* head = nullptr;
-    node_t* tmp = create_new_node(0);
+    file_data_t file_data = read_file_in_array(fp);
+    fclose(fp);
 
-    insert_at_head(&head, tmp);
-    node_t** current_node = &head;
-
-    char jump_to_token;
-    bool is_jump_failed = false;
-
-    int buffer_index = 0;
-    char buffer_instructions[100];
-    clear_buffer(buffer_instructions);
-
-    bool store_instructions = false;
+    node_t* head = init_tape();
 
     printf("STEP\t INSTRUCTION    VALUE\n");
+    bool is_jump_if_zero = false;
+    bool is_jump_if_not_zero = false;
 
-    int c;
-    while ((c = fgetc(fp)) != EOF)
+    for (int i = 0; i < file_data.index; i++)
     {
-        if (c == NEW_LINE || c == SPACE_KEY)
+        char instruction = (char)file_data.data[i];
+
+        if (is_jump_if_zero && instruction != TOKEN_JUMP_IF_NOT_ZERO)
         {
             continue;
         }
 
-        //TODO: Test jump instructions to verify that everything is implemented correctly
-        if (is_jump_failed)
+        bool is_jump_active = is_jump_if_zero || is_jump_if_not_zero;
+
+        //return true if jump conditions are met
+        const bool status_jump_execution =
+            process_instruction(instruction, &head, is_jump_active);
+
+        if (status_jump_execution)
         {
-            if (jump_to_token == c)
+            if (instruction == TOKEN_JUMP_IF_ZERO)
             {
-                is_jump_failed = false;
+                is_jump_if_zero = true;
             }
-            else
+            if (instruction == TOKEN_JUMP_IF_NOT_ZERO)
             {
-                //TODO: Add buffer for skipped instructions
-                //continue;
+                is_jump_if_not_zero = true;
             }
         }
 
-        bool status = false;
-
-        if (!is_jump_failed)
+        // Case for "jump if zero"
+        if (!status_jump_execution && instruction == TOKEN_JUMP_IF_NOT_ZERO)
         {
-            status = process_instruction(c, current_node);
-            if (!status)
-            {
-                if (c == TOKEN_JUMP_IF_ZERO)
-                {
-                    jump_to_token = TOKEN_JUMP_IF_NOT_ZERO;
-                }
-                if (c == TOKEN_JUMP_IF_NOT_ZERO)
-                {
-                    jump_to_token = TOKEN_JUMP_IF_ZERO;
-                }
-                is_jump_failed = true;
-            }
+            is_jump_if_zero = false;
+        }
+        // Case for "jump if not zero"
+        if (!status_jump_execution && instruction == TOKEN_JUMP_IF_ZERO)
+        {
+            is_jump_if_not_zero = false;
         }
 
-        //Store instructions if TOKEN_JUMP_IF_NOT_ZERO is executed
-        if (status && c == TOKEN_JUMP_IF_ZERO || store_instructions)
+        if (is_jump_if_not_zero)
         {
-            if (c != TOKEN_JUMP_IF_ZERO && c != TOKEN_JUMP_IF_NOT_ZERO
-                || (c == TOKEN_JUMP_IF_NOT_ZERO && (*current_node)->value == 0))
+            while (instruction != TOKEN_JUMP_IF_ZERO)
             {
-                buffer_instructions[buffer_index] = (char)c;
-                buffer_index++;
+                i--;
+                instruction = (char)file_data.data[i];
             }
-
-            store_instructions = true;
-
-            if (c == TOKEN_JUMP_IF_NOT_ZERO && (*current_node)->value != 0)
-            {
-                process_instruction(TOKEN_JUMP_IF_NOT_ZERO, current_node);
-
-                buffer_index--;
-                for (;buffer_index >= 0; buffer_index--)
-                {
-                    process_instruction(buffer_instructions[buffer_index], current_node);
-                }
-
-                buffer_index = 0;
-                clear_buffer(buffer_instructions);
-                store_instructions = false;
-            }
+            // Subtract one, otherwise right token is skipped
+            i--;
         }
+
     }
-
-    fclose(fp);
 
     //print_list(head);
     free_list(head);
+    free(file_data.data);
 
     return EXIT_SUCCESS;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
