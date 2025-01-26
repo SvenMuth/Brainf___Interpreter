@@ -218,7 +218,7 @@ void move_right(node_t** current_pos)
 {
     if ((*current_pos)->next == nullptr)
     {
-        ERROR_PRINT("Current node is nullptr!");
+        ERROR_PRINT("Next node is nullptr!");
         exit(EXIT_FAILURE);
     }
     *current_pos = (*current_pos)->next;
@@ -228,7 +228,7 @@ void move_left(node_t** current_pos)
 {
     if ((*current_pos)->prev == nullptr)
     {
-        ERROR_PRINT("Current node is nullptr!");
+        ERROR_PRINT("Previous node is nullptr!");
         exit(EXIT_FAILURE);
     }
     *current_pos = (*current_pos)->prev;
