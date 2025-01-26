@@ -28,8 +28,8 @@ int main(int argc, char** argv)
     bool is_jump_if_zero = false;
     bool is_jump_if_not_zero = false;
 
-    char buffer[1000];
-    int buffer_index = 0;
+    char buffer_output[1000];
+    int buffer_output_index = 0;
 
     for (int i = 0; i < file_data.index; i++)
     {
@@ -48,8 +48,8 @@ int main(int argc, char** argv)
 
         if (instruction == TOKEN_DISPLAY)
         {
-            buffer[buffer_index] = (char)head->value;
-            buffer_index++;
+            buffer_output[buffer_output_index] = (char)head->value;
+            buffer_output_index++;
         }
 
         if (status_jump_execution)
@@ -87,8 +87,8 @@ int main(int argc, char** argv)
         }
 
     }
-    buffer[buffer_index] = 0;
-    printf("\nOutput: %s", buffer);
+    buffer_output[buffer_output_index] = 0;
+    printf("\nOutput: %s", buffer_output);
 
     //print_list(head);
     free_list(head);
