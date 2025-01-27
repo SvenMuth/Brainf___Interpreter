@@ -19,8 +19,8 @@ void allocate_space(file_data_t* file_data)
 {
     calculate_size(file_data);
 
-    file_data->data = malloc(sizeof(int) * file_data->size);
-    if (file_data->data == nullptr)
+    file_data->instructions = malloc(sizeof(int) * file_data->size);
+    if (file_data->instructions == nullptr)
     {
         ERROR_PRINT("Memory allocation failed!");
         exit(EXIT_FAILURE);
@@ -31,8 +31,8 @@ void realloc_space(file_data_t* file_data)
 {
     calculate_size(file_data);
 
-    file_data->data = realloc(file_data->data,sizeof(int) * file_data->size);
-    if (file_data->data == nullptr)
+    file_data->instructions = realloc(file_data->instructions,sizeof(int) * file_data->size);
+    if (file_data->instructions == nullptr)
     {
         ERROR_PRINT("Realloc failed!");
         exit(EXIT_FAILURE);
@@ -42,7 +42,7 @@ void realloc_space(file_data_t* file_data)
 file_data_t read_file_in_array(FILE* fp)
 {
     file_data_t file_data = {
-        .index = 0,
+        .length = 0,
         .multiplicator = 1,
         .step = STEP_SIZE,
     };
@@ -51,16 +51,16 @@ file_data_t read_file_in_array(FILE* fp)
     int c;
     while ((c = fgetc(fp)) != EOF)
     {
-        if (c == NEW_LINE || c == SPACE_KEY)
-        {
-            continue;
-        }
+        //if (c == NEW_LINE || c == SPACE_KEY)
+        //{
+        //    continue;
+        //}
 
         //Add everything to buffer
-        file_data.data[file_data.index] = c;
-        file_data.index++;
+        file_data.instructions[file_data.length] = c;
+        file_data.length++;
 
-        if ((file_data.index + 1) % STEP_SIZE == 0)
+        if ((file_data.length + 1) % STEP_SIZE == 0)
         {
             realloc_space(&file_data);
         }
@@ -79,6 +79,8 @@ void clear_char_buffer(char* buffer)
 
 void log_execution(const char instruction, const char* message, const int value)
 {
+#ifdef DEBUG
+#else
     //TODO: Implement better format specifiers
     static int counter = 1;
     if (instruction == TOKEN_ADD_ONE || instruction == TOKEN_MOVE_RIGHT)
@@ -103,6 +105,7 @@ void log_execution(const char instruction, const char* message, const int value)
     }
 
     counter++;
+#endif
 }
 
 node_t* init_tape()
@@ -163,7 +166,7 @@ bool process_instruction(const char instruction, node_t** current_pos, const boo
         break;
 
     case TOKEN_JUMP_IF_ZERO:
-        const bool result_if_zero = jump_if_zero(current_pos, is_jump_active);
+        const bool result_if_zero = jump_if_zero(*current_pos, is_jump_active);
         if (result_if_zero)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
@@ -179,7 +182,7 @@ bool process_instruction(const char instruction, node_t** current_pos, const boo
         break;
 
     case TOKEN_JUMP_IF_NOT_ZERO:
-        const bool result_if_not_zero = jump_if_not_zero(current_pos, is_jump_active);
+        const bool result_if_not_zero = jump_if_not_zero(*current_pos, is_jump_active);
         if (result_if_not_zero)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
@@ -200,18 +203,6 @@ bool process_instruction(const char instruction, node_t** current_pos, const boo
     }
 
     return false;
-}
-
-void clear_stdin()
-{
-    while (true)
-    {
-        int c = getchar();
-        if (c == EOF || c == '\n')
-        {
-            break;
-        }
-    }
 }
 
 void move_right(node_t** current_pos)
@@ -239,7 +230,7 @@ void read(node_t* current_pos)
     printf("Input value: ");
     current_pos->value = getchar() - '0';
 
-    clear_stdin();
+    fseek(stdin,0,SEEK_END);
 }
 
 void add(node_t* current_pos)
@@ -252,28 +243,28 @@ void subtract(node_t* current_pos)
     current_pos->value -= 1;
 }
 
-bool jump_if_zero(node_t** current_pos, const bool is_jump_active)
+bool jump_if_zero(node_t* current_pos, const bool is_jump_active)
 {
     if (is_jump_active)
     {
         return false;
     }
 
-    if ((*current_pos)->value == 0)
+    if (current_pos->value == 0)
     {
         return true;
     }
     return false;
 }
 
-bool jump_if_not_zero(node_t** current_pos, const bool is_jump_active)
+bool jump_if_not_zero(node_t* current_pos, const bool is_jump_active)
 {
     if (is_jump_active)
     {
         return false;
     }
 
-    if ((*current_pos)->value != 0)
+    if (current_pos->value != 0)
     {
         return true;
     }

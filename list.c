@@ -7,6 +7,8 @@
 
 #include "list.h"
 
+#include "interpreter.h"
+
 node_t* create_new_node(const int value)
 {
     node_t* new_node = malloc(sizeof(node_t));
@@ -69,6 +71,12 @@ void remove_node(node_t** head, node_t* node_to_remove)
 
 void free_list(node_t* head)
 {
+    if (head->prev != nullptr)
+    {
+        ERROR_PRINT("Freeing the linked list failed. Pointer was not the head of the list");
+        exit(EXIT_FAILURE);
+    }
+
     while (head != nullptr)
     {
         node_t* tmp = head;

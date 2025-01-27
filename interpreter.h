@@ -22,13 +22,14 @@
 #define NEW_LINE                  '\n'  //10
 
 #define ERROR_PRINT(args ...)     fprintf(stderr, args)
+#define DEBUG
 
 
 typedef struct file_data
 {
-    int* data;
+    int* instructions;
     int size;
-    int index;
+    int length;
 
     const int step;
     int multiplicator;
@@ -46,15 +47,13 @@ void log_execution(char instruction, const char* message, const int value);
 node_t* init_tape();
 bool process_instruction(char instruction, node_t** current_pos, bool is_jump_active);
 
-void clear_stdin();
-
 void move_right(node_t** current_pos);
 void move_left(node_t** current_pos);
 void read(node_t* current_pos);
 void add(node_t* current_pos);
 void subtract(node_t* current_pos);
 
-bool jump_if_zero(node_t** current_pos, bool is_jump_active);
-bool jump_if_not_zero(node_t** current_pos, bool is_jump_active);
+bool jump_if_zero(node_t* current_pos, bool is_jump_active);
+bool jump_if_not_zero(node_t* current_pos, bool is_jump_active);
 
 #endif //INTERPRETER_H
