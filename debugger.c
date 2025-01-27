@@ -74,7 +74,7 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
     backup_tmp = tmp;
     while (counter != 10 && tmp != nullptr)
     {
-        printf("%d | ", tmp->index);
+        printf("%-3d | ", tmp->index);
         tmp = tmp->next;
         counter++;
     }
@@ -86,7 +86,7 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
     tmp = backup_tmp;
     while (counter != 10 && tmp != nullptr)
     {
-        printf("%d | ", tmp->value);
+        printf("%-3d | ", tmp->value);
         tmp = tmp->next;
         counter++;
     }
@@ -96,7 +96,6 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
     printf("Input number (0-999) of instructions to skip [\"ENTER\" for next instruction]: ");
 
     char buffer[4];
-    //int input = getchar();
     fgets(buffer, 4, stdin);
     long input = strtol(buffer, (char**)nullptr, 10);
 
