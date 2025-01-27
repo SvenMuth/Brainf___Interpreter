@@ -8,10 +8,36 @@
 
 #include "interpreter.h"
 
+#ifndef DEBUG
+#include "colors.h"
+#endif
+
+
+char_array_t int_to_char_array(file_data_t file_data_int_array)
+{
+
+    char_array_t file_data_char_array = {
+        .instructions = malloc(sizeof(char) * file_data_int_array.length),
+        .length = file_data_int_array.length,
+    };
+
+    if (file_data_char_array.instructions == nullptr)
+    {
+        ERROR_PRINT("Memory allocation failed!");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < file_data_int_array.length; i++)
+    {
+        file_data_char_array.instructions[i] = (char)file_data_int_array.instructions[i];
+    }
+
+    return file_data_char_array;
+}
 
 void calculate_size(file_data_t* file_data)
 {
-    file_data->size = file_data->step  * file_data->multiplicator;
+    file_data->size = file_data->step * file_data->multiplicator;
     file_data->multiplicator++;
 }
 
@@ -39,34 +65,32 @@ void realloc_space(file_data_t* file_data)
     }
 }
 
-file_data_t read_file_in_array(FILE* fp)
+char_array_t read_file_in_array(FILE* fp)
 {
-    file_data_t file_data = {
+    file_data_t file_data_int_array = {
         .length = 0,
         .multiplicator = 1,
         .step = STEP_SIZE,
     };
-    allocate_space(&file_data);
+    allocate_space(&file_data_int_array);
 
     int c;
     while ((c = fgetc(fp)) != EOF)
     {
-        //if (c == NEW_LINE || c == SPACE_KEY)
-        //{
-        //    continue;
-        //}
-
         //Add everything to buffer
-        file_data.instructions[file_data.length] = c;
-        file_data.length++;
+        file_data_int_array.instructions[file_data_int_array.length] = c;
+        file_data_int_array.length++;
 
-        if ((file_data.length + 1) % STEP_SIZE == 0)
+        if ((file_data_int_array.length + 1) % STEP_SIZE == 0)
         {
-            realloc_space(&file_data);
+            realloc_space(&file_data_int_array);
         }
     }
 
-    return file_data;
+    char_array_t file_data_as_char = int_to_char_array(file_data_int_array);
+    free(file_data_int_array.instructions);
+
+    return file_data_as_char;
 }
 
 void clear_char_buffer(char* buffer)
@@ -80,6 +104,7 @@ void clear_char_buffer(char* buffer)
 void log_execution(const char instruction, const char* message, const int value)
 {
 #ifdef DEBUG
+    //Dont print log while debugging
 #else
     //TODO: Implement better format specifiers
     static int counter = 1;
@@ -95,7 +120,7 @@ void log_execution(const char instruction, const char* message, const int value)
     }
     else if (instruction == TOKEN_DISPLAY)
     {
-        printf("(%d) \t \'%c\' %-18s [%d -> \'%c\']\n",
+        printf(HI_MAGENTA "(%d) \t \'%c\' %-18s [%d -> \'%c\']\n" RESET_COLOR,
             counter, instruction, message, value, (char)value);
     }
     else

@@ -22,8 +22,13 @@
 #define NEW_LINE                  '\n'  //10
 
 #define ERROR_PRINT(args ...)     fprintf(stderr, args)
-#define DEBUG
 
+
+typedef struct char_array
+{
+    char* instructions;
+    int length;
+} char_array_t;
 
 typedef struct file_data
 {
@@ -35,11 +40,12 @@ typedef struct file_data
     int multiplicator;
 } file_data_t;
 
+char_array_t int_to_char_array(file_data_t file_data_int_array);
 
 void calculate_size(file_data_t* file_data);
 void allocate_space(file_data_t* file_data);
 void realloc_space(file_data_t* file_data);
-file_data_t read_file_in_array(FILE* fp);
+char_array_t read_file_in_array(FILE* fp);
 void clear_char_buffer(char* buffer);
 
 void log_execution(char instruction, const char* message, const int value);
