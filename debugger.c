@@ -77,7 +77,16 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
     backup_tmp = tmp;
     while (counter != 11 && tmp != nullptr)
     {
-        printf("%-3d | ", tmp->index);
+        if (current_pos->index == tmp->index)
+        {
+            printf(RED "%-3d" RESET_COLOR, tmp->index);
+            printf(" | ");
+        }
+        else
+        {
+            printf("%-3d | ", tmp->index);
+        }
+
         tmp = tmp->next;
         counter++;
     }
