@@ -34,17 +34,19 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
         i++;
     }
 
-    printf(BLUE "\n\nPosition on tape now:\n" RESET_COLOR);
-    printf("INDEX: %d\n", current_pos->index);
+    printf("\n\nCURRENT STATUS:\n");
+    printf(BLUE "INDEX: " RESET_COLOR);
+    printf("%d", current_pos->index);
 
     if (file_data_as_char_array.instructions[current_index] == TOKEN_DISPLAY)
     {
-        printf(HI_MAGENTA "VALUE: %d -> \'%c\'\n" RESET_COLOR,
+        printf(HI_MAGENTA "\tVALUE: %d -> \'%c\'\n\n" RESET_COLOR,
             current_pos->value, (char)current_pos->value);
     }
     else
     {
-        printf("VALUE: %d\n\n", current_pos->value);
+        printf(BLUE "\tVALUE: " RESET_COLOR);
+        printf("%d\n\n", current_pos->value);
     }
 
     //Try to go back five nodes
@@ -68,12 +70,12 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
         }
     }
 
-    printf(BLUE "Neighbors of current position on tape from [-5] to [+5] (if possible):\n" RESET_COLOR);
-    printf("INDEX:\t");
+    printf("Neighbors of current position on tape from [-5] to [+5] (if possible):\n");
+    printf(BLUE "INDEX:\t" RESET_COLOR);
 
     counter = 0;
     backup_tmp = tmp;
-    while (counter != 10 && tmp != nullptr)
+    while (counter != 11 && tmp != nullptr)
     {
         printf("%-3d | ", tmp->index);
         tmp = tmp->next;
@@ -81,13 +83,22 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
     }
 
     printf("\n");
-    printf("VALUE:\t");
+    printf(BLUE "VALUE:\t" RESET_COLOR);
 
     counter = 0;
     tmp = backup_tmp;
-    while (counter != 10 && tmp != nullptr)
+    while (counter != 11 && tmp != nullptr)
     {
-        printf("%-3d | ", tmp->value);
+        if (tmp->value != 0)
+        {
+            printf(MAGENTA "%-3d" RESET_COLOR, tmp->value);
+            printf(" | ");
+        }
+        else
+        {
+            printf("%-3d | ", tmp->value);
+        }
+
         tmp = tmp->next;
         counter++;
     }
@@ -98,7 +109,7 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
 
     char buffer[4];
     fgets(buffer, 4, stdin);
-    long input = strtol(buffer, (char**)nullptr, 10);
+    long input = strtol(buffer, nullptr, 10);
 
     printf("\n");
 
