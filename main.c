@@ -50,15 +50,15 @@ int main(int argc, char** argv)
             continue;
         }
 
-#ifdef DEBUG
-        debug(file_data_as_char_array, i, current_node);
-#endif
-
         const bool is_jump_active = is_jump_if_zero || is_jump_if_not_zero;
 
         //return true if jump conditions are met
         const bool status_jump_execution =
             process_instruction(instruction, &current_node, is_jump_active);
+
+#ifdef DEBUG
+        debug(file_data_as_char_array, i, current_node);
+#endif
 
         if (instruction == TOKEN_DISPLAY)
         {

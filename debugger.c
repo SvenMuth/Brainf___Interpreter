@@ -69,7 +69,8 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
     }
 
     printf(BLUE "Neighbors of current position on tape from [-5] to [+5] (if possible):\n" RESET_COLOR);
-    printf("INDEX:  ");
+    printf("INDEX:\t");
+
     counter = 0;
     backup_tmp = tmp;
     while (counter != 10 && tmp != nullptr)
@@ -80,7 +81,7 @@ void debug(char_array_t file_data_as_char_array, const int current_index, node_t
     }
 
     printf("\n");
-    printf("VALUE:  ");
+    printf("VALUE:\t");
 
     counter = 0;
     tmp = backup_tmp;
