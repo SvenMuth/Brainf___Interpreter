@@ -65,7 +65,15 @@ int main(int argc, char** argv)
             process_instruction(instruction, &current_node, is_jump_active);
 
 #ifdef DEBUG
-        debug(file_data_as_char_array, i, current_node);
+        debug_info_t debug_info = {
+            .instructions = file_data_as_char_array.instructions,
+            .instructions_length = file_data_as_char_array.length,
+            .current_index = i,
+            .current_pos = current_node,
+        };
+
+        //debug(file_data_as_char_array, i, current_node);
+        debug(debug_info);
 #endif
 
 
