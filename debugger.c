@@ -31,9 +31,9 @@ void debug(data_t debug_info)
     CLEAR_SCREEN();
 }
 
-void calculate_range_of_code_to_print(int* range_negative, int* range_positive, data_t* debug_info)
+void calculate_range_of_code_to_print(int* range_negative, int* range_positive, const data_t* debug_info)
 {
-    int range_neg = debug_info->index_instructions - 200;
+    int range_neg = debug_info->pos_instructions - 200;
     int range_pos = 0;
 
     if (range_neg < 0)
@@ -62,7 +62,7 @@ void calculate_range_of_code_to_print(int* range_negative, int* range_positive, 
     *range_positive = range_pos;
 }
 
-void print_debug_code(data_t* debug_info)
+void print_debug_code(const data_t* debug_info)
 {
     printf("\n");
     printf(RED "\nDEBUG INFO\n\n" RESET_COLOR);
@@ -75,7 +75,7 @@ void print_debug_code(data_t* debug_info)
     printf(YELLOW "%d\n" RESET_COLOR, range_negative);
     while (range_negative < range_positive)
     {
-        if (debug_info->index_instructions == range_negative)
+        if (debug_info->pos_instructions == range_negative)
         {
             printf(HI_RED "%c" RESET_COLOR, debug_info->instructions[range_negative]);
             range_negative++;
@@ -88,7 +88,7 @@ void print_debug_code(data_t* debug_info)
     printf(YELLOW "\n%d" RESET_COLOR, range_positive);
 }
 
-void print_status(data_t* debug_info, const long step)
+void print_status(const data_t* debug_info, const long step)
 {
     printf(RED "\n\nCURRENT STATUS:\n" RESET_COLOR);
     printf(BLUE "STEP: " RESET_COLOR);
@@ -96,7 +96,7 @@ void print_status(data_t* debug_info, const long step)
 
     printf(BLUE "INSTRUCTION: " RESET_COLOR);
 
-    switch (debug_info->instructions[debug_info->index_instructions])
+    switch (debug_info->instructions[debug_info->pos_instructions])
     {
 
     case TOKEN_MOVE_RIGHT: printf("MOVE RIGHT"); break;
@@ -109,30 +109,30 @@ void print_status(data_t* debug_info, const long step)
     case TOKEN_JUMP_IF_NOT_ZERO: printf("JUMP IF NOT ZERO"); break;
     default:
         ERROR_PRINT("Invalid instruction occurred! -> \'%d\'",
-            debug_info->instructions[debug_info->index_instructions]);
+            debug_info->instructions[debug_info->pos_instructions]);
         exit(EXIT_FAILURE);
         break;
     }
 
     printf(BLUE "\nINDEX: " RESET_COLOR);
-    printf("%d", debug_info->index_instructions);
+    printf("%d", debug_info->pos_instructions);
 
-    if (debug_info->instructions[debug_info->index_instructions] == TOKEN_DISPLAY)
+    if (debug_info->instructions[debug_info->pos_instructions] == TOKEN_DISPLAY)
     {
         printf(HI_MAGENTA "\tVALUE: %d -> \'%c\'\n\n" RESET_COLOR,
-            debug_info->tape[debug_info->index_tape], (char)debug_info->tape[debug_info->index_tape]);
+            debug_info->tape[debug_info->pos_tape], (char)debug_info->tape[debug_info->pos_tape]);
     }
     else
     {
         printf(BLUE "\tVALUE: " RESET_COLOR);
-        printf("%d\n\n", debug_info->tape[debug_info->index_tape]);
+        printf("%d\n\n", debug_info->tape[debug_info->pos_tape]);
     }
 }
 
-void print_tape_section(data_t* debug_info)
+void print_tape_section(const data_t* debug_info)
 {
     //Try to go back five nodes
-    int start = debug_info->index_tape - 5;
+    int start = debug_info->pos_tape - 5;
     int end = 0;
     if (start < 0)
     {
@@ -143,7 +143,7 @@ void print_tape_section(data_t* debug_info)
 
     if (end >= TAPE_SIZE)
     {
-        end = TAPE_SIZE - 1;
+        end = debug_info->tape_length;
     }
 
     int tmp_start = start;
@@ -155,14 +155,14 @@ void print_tape_section(data_t* debug_info)
     // Print indexes
     for (; tmp_start <= tmp_end; tmp_start++)
     {
-        if (debug_info->index_tape == tmp_start)
+        if (debug_info->pos_tape == tmp_start)
         {
-            printf(RED "%-3d" RESET_COLOR, start);
+            printf(RED "%-3d" RESET_COLOR, tmp_start);
             printf(" | ");
         }
         else
         {
-            printf("%-3d | ", start);
+            printf("%-3d | ", tmp_start);
         }
     }
 

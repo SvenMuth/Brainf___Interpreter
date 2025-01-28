@@ -7,6 +7,7 @@
 
 #define TAPE_SIZE                 30000 // Fixed tape size for list
 #define STEP_SIZE                 1000  //Defines in which step the size of file_data_size is increased
+#define BUFFER_SIZE               1000  //Output buffer
 
 #define TOKEN_MOVE_RIGHT          '>'   //62
 #define TOKEN_MOVE_LEFT           '<'   //60
@@ -35,16 +36,18 @@ typedef struct int_array
 typedef struct data
 {
     int* tape;
-    int index_tape;
+    int pos_tape;
+    int tape_length;
 
     bool is_jump_if_zero;
     bool is_jump_if_not_zero;
 
     char* instructions;
-    int index_instructions;
+    int pos_instructions;
     int instructions_length;
     char current_instruction;
 }data_t;
+
 
 void int_to_char_array(int_array_t file_data, data_t* exec_data);
 
@@ -52,7 +55,7 @@ void calculate_size(int_array_t* file_data);
 void allocate_space(int_array_t* file_data);
 void realloc_space(int_array_t* file_data);
 void read_file_in_array(FILE* fp, data_t* exec_data);
-void set_array_zero(data_t* data);
+void set_array_zero(const data_t* data);
 
 void log_execution(char instruction, const char* message, int value);
 
@@ -60,12 +63,22 @@ bool process_instruction(data_t* data, bool is_jump_active);
 
 void move_right(data_t* data);
 void move_left(data_t* data);
-void read(data_t* data);
-void add(data_t* data);
-void subtract(data_t* data);
+void read(const data_t* data);
+void add(const data_t* data);
+void subtract(const data_t* data);
 
-bool jump_if_zero(data_t* data, bool is_jump_active);
-bool jump_if_not_zero(data_t* data, bool is_jump_active);
+bool jump_if_zero(const data_t* data, bool is_jump_active);
+bool jump_if_not_zero(const data_t* data, bool is_jump_active);
+
+FILE* open_file(const char* filename);
+
+void print_log_header();
+void initialize_exec_data(data_t* data);
+
+bool run_jump_if_zero(const data_t* data);
+void run_jump_if_not_zero(data_t* data);
+void reset_is_jump(data_t* data, const bool status_jump_execution);
+void set_is_jump(data_t* data, const bool status_jump_execution);
 
 #endif //INTERPRETER_H
 

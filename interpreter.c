@@ -87,9 +87,9 @@ void read_file_in_array(FILE* fp, data_t* exec_data)
     free(file_data.instructions);
 }
 
-void set_array_zero(data_t* data)
+void set_array_zero(const data_t* data)
 {
-    for (int i = 0; i < TAPE_SIZE - 1; i++)
+    for (int i = 0; i < data->tape_length; i++)
     {
         data->tape[i] = 0;
     }
@@ -134,36 +134,36 @@ bool process_instruction(data_t* data, const bool is_jump_active)
     case TOKEN_MOVE_RIGHT:
         move_right(data);
         log_execution(TOKEN_MOVE_RIGHT,
-            "[moved right]", data->tape[data->index_tape]);
+            "[moved right]", data->tape[data->pos_tape]);
         break;
 
     case TOKEN_MOVE_LEFT:
         move_left(data);
         log_execution(TOKEN_MOVE_LEFT,
-            "[moved left]", data->tape[data->index_tape]);
+            "[moved left]", data->tape[data->pos_tape]);
         break;
 
     case TOKEN_DISPLAY:
         log_execution(TOKEN_DISPLAY,
-            "[output]", data->tape[data->index_tape]);
+            "[output]", data->tape[data->pos_tape]);
         break;
 
     case TOKEN_READ:
         read(data);
         log_execution(TOKEN_READ,
-            "[read in]", data->tape[data->index_tape]);
+            "[read in]", data->tape[data->pos_tape]);
         break;
 
     case TOKEN_ADD_ONE:
         add(data);
         log_execution(TOKEN_ADD_ONE,
-            "[add]", data->tape[data->index_tape]);
+            "[add]", data->tape[data->pos_tape]);
         break;
 
     case TOKEN_SUBTRACT_ONE:
         subtract(data);
         log_execution(TOKEN_SUBTRACT_ONE,
-            "[subtract]", data->tape[data->index_tape]);
+            "[subtract]", data->tape[data->pos_tape]);
         break;
 
     case TOKEN_JUMP_IF_ZERO:
@@ -171,13 +171,13 @@ bool process_instruction(data_t* data, const bool is_jump_active)
         if (result_if_zero)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[jump start]", data->tape[data->index_tape]);
+            "[jump start]", data->tape[data->pos_tape]);
             return true;
         }
         if (!result_if_zero && is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[r jump end]", data->tape[data->index_tape]);
+            "[r jump end]", data->tape[data->pos_tape]);
         }
 
         break;
@@ -187,13 +187,13 @@ bool process_instruction(data_t* data, const bool is_jump_active)
         if (result_if_not_zero)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[r jump start]", data->tape[data->index_tape]);
+            "[r jump start]", data->tape[data->pos_tape]);
             return true;
         }
         if (!result_if_not_zero && is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[jump end]", data->tape[data->index_tape]);
+            "[jump end]", data->tape[data->pos_tape]);
         }
         break;
 
@@ -208,68 +208,164 @@ bool process_instruction(data_t* data, const bool is_jump_active)
 
 void move_right(data_t* data)
 {
-    if (data->index_tape - 1 == TAPE_SIZE)
+    if (data->pos_tape == data->tape_length)
     {
-        ERROR_PRINT("Tape is not large enough! [INDEX: %d]", data->index_tape);
+        ERROR_PRINT("Tape is not large enough! [INDEX: %d]", data->pos_tape);
         exit(EXIT_FAILURE);
     }
-    data->index_tape += 1;
+    data->pos_tape += 1;
 }
 
 void move_left(data_t* data)
 {
-    if (data->index_tape == 0)
+    if (data->pos_tape == 0)
     {
-        ERROR_PRINT("Index is 0! [INDEX: %d]", data->index_tape);
+        ERROR_PRINT("Index is 0! [INDEX: %d]", data->pos_tape);
         exit(EXIT_FAILURE);
     }
-    data->index_tape -= 1;
+    data->pos_tape -= 1;
 }
 
-void read(data_t* data)
+void read(const data_t* data)
 {
     printf("Input value: ");
-    data->tape[data->index_tape] = getchar() - '0';
+    data->tape[data->pos_tape] = getchar() - '0';
 
     fseek(stdin,0,SEEK_END);
 }
 
-void add(data_t* data)
+void add(const data_t* data)
 {
-    data->tape[data->index_tape] += 1;
+    data->tape[data->pos_tape] += 1;
 }
 
-void subtract(data_t* data)
+void subtract(const data_t* data)
 {
-    data->tape[data->index_tape] -= 1;
+    data->tape[data->pos_tape] -= 1;
 }
 
-bool jump_if_zero(data_t* data, const bool is_jump_active)
+bool jump_if_zero(const data_t* data, const bool is_jump_active)
 {
     if (is_jump_active)
     {
         return false;
     }
 
-    if (data->tape[data->index_tape] == 0)
+    if (data->tape[data->pos_tape] == 0)
     {
         return true;
     }
     return false;
 }
 
-bool jump_if_not_zero(data_t* data, const bool is_jump_active)
+bool jump_if_not_zero(const data_t* data, const bool is_jump_active)
 {
     if (is_jump_active)
     {
         return false;
     }
 
-    if (data->tape[data->index_tape] != 0)
+    if (data->tape[data->pos_tape] != 0)
     {
         return true;
     }
     return false;
+}
+
+FILE* open_file(const char* filename)
+{
+    FILE* fp = fopen(filename, "r");
+    if (!fp)
+    {
+        perror("File opening failed!");
+        exit(EXIT_FAILURE);
+    }
+
+    return fp;
+}
+
+void print_log_header()
+{
+#if !defined(DEBUG) && !defined(NO_LOG)
+    printf("STEP\t INSTRUCTION\t\t\tVALUE\n");
+#endif
+}
+
+void initialize_exec_data(data_t* data)
+{
+    *data = (data_t) {
+        .tape = malloc(sizeof(int) * TAPE_SIZE),
+        .pos_tape = 0,
+        .tape_length = TAPE_SIZE - 1,
+        .is_jump_if_zero = false,
+        .is_jump_if_not_zero = false,
+        .instructions = nullptr,
+        .pos_instructions = 0,
+        .instructions_length = 0,
+        .current_instruction = 0,
+    };
+
+    if (data->tape == nullptr)
+    {
+        ERROR_PRINT("Memory allocation failed!");
+        exit(EXIT_FAILURE);
+    }
+
+    set_array_zero(data);
+}
+
+bool run_jump_if_zero(const data_t* data)
+{
+    if (data->is_jump_if_zero && data->current_instruction != TOKEN_JUMP_IF_NOT_ZERO)
+    {
+        return true;
+    }
+    return false;
+}
+
+void run_jump_if_not_zero(data_t* data)
+{
+    if (data->is_jump_if_not_zero)
+    {
+        while (data->current_instruction != TOKEN_JUMP_IF_ZERO)
+        {
+            data->pos_instructions--;
+            data->current_instruction = data->instructions[data->pos_instructions];
+        }
+        // Subtract one, otherwise right token is skipped
+        data->pos_instructions--;
+    }
+}
+
+void set_is_jump(data_t* data, const bool status_jump_execution)
+{
+    if (status_jump_execution)
+    {
+        if (data->current_instruction == TOKEN_JUMP_IF_ZERO)
+        {
+            data->is_jump_if_zero = true;
+        }
+        if (data->current_instruction == TOKEN_JUMP_IF_NOT_ZERO)
+        {
+            data->is_jump_if_not_zero = true;
+        }
+    }
+}
+
+void reset_is_jump(data_t* data, const bool status_jump_execution)
+{
+    // Case for "jump if zero"
+    if (!status_jump_execution &&
+        data->current_instruction == TOKEN_JUMP_IF_NOT_ZERO)
+    {
+        data->is_jump_if_zero = false;
+    }
+    // Case for "jump if not zero"
+    if (!status_jump_execution &&
+        data->current_instruction == TOKEN_JUMP_IF_ZERO)
+    {
+        data->is_jump_if_not_zero = false;
+    }
 }
 
 
