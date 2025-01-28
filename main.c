@@ -23,21 +23,26 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    data_t exec_data = {
-        .current_pos = nullptr,
+    data_t data = {
+        .tape = malloc(sizeof(int) * TAPE_SIZE),
+        .index_tape = 0,
         .is_jump_if_zero = false,
         .is_jump_if_not_zero = false,
         .instructions = nullptr,
-        .current_index = 0,
+        .index_instructions = 0,
         .instructions_length = 0,
         .current_instruction = 0,
     };
 
-    read_file_in_array(fp, &exec_data);
-    fclose(fp);
+    if (data.tape == nullptr)
+    {
+        ERROR_PRINT("Memory allocation failed!");
+        exit(EXIT_FAILURE);
+    }
+    set_array_zero(&data);
 
-    node_t* head = init_tape();
-    exec_data.current_pos = &head;
+    read_file_in_array(fp, &data);
+    fclose(fp);
 
 #if !defined(DEBUG) && !defined(NO_LOG)
     printf("STEP\t INSTRUCTION\t\t\tVALUE\n");
@@ -51,33 +56,33 @@ int main(int argc, char** argv)
     printf("Output: ");
 #endif
 
-    for (; exec_data.current_index < exec_data.instructions_length; exec_data.current_index++)
+    for (; data.index_instructions < data.instructions_length; data.index_instructions++)
     {
-        exec_data.current_instruction = exec_data.instructions[exec_data.current_index];
+        data.current_instruction = data.instructions[data.index_instructions];
 
-        if (exec_data.current_instruction == NEW_LINE
-            || exec_data.current_instruction == SPACE_KEY)
+        if (data.current_instruction == NEW_LINE
+            || data.current_instruction == SPACE_KEY)
         {
             continue;
         }
 
-        if (exec_data.is_jump_if_zero && exec_data.current_instruction != TOKEN_JUMP_IF_NOT_ZERO)
+        if (data.is_jump_if_zero && data.current_instruction != TOKEN_JUMP_IF_NOT_ZERO)
         {
             continue;
         }
 
-        const bool is_jump_active = exec_data.is_jump_if_zero || exec_data.is_jump_if_not_zero;
+        const bool is_jump_active = data.is_jump_if_zero || data.is_jump_if_not_zero;
 
         //return true if jump conditions are met
         const bool status_jump_execution =
-            process_instruction(&exec_data, is_jump_active);
+            process_instruction(&data, is_jump_active);
 
 #ifdef DEBUG
         debug(exec_data);
 #endif
 
 
-        if (exec_data.current_instruction == TOKEN_DISPLAY)
+        if (data.current_instruction == TOKEN_DISPLAY)
         {
 #ifndef NO_LOG
             if (buffer_output_index == BUFFER_SIZE - 1)
@@ -85,7 +90,7 @@ int main(int argc, char** argv)
                 ERROR_PRINT("Output size to big for buffer. Try with NO_LOG option!");
                 exit(EXIT_FAILURE);
             }
-            buffer_output[buffer_output_index] = (char)(*exec_data.current_pos)->value;
+            buffer_output[buffer_output_index] = (char)data.tape[data.index_tape];
             buffer_output_index++;
 #else
             printf("%c", (char)current_node->value);
@@ -94,38 +99,38 @@ int main(int argc, char** argv)
 
         if (status_jump_execution)
         {
-            if (exec_data.current_instruction == TOKEN_JUMP_IF_ZERO)
+            if (data.current_instruction == TOKEN_JUMP_IF_ZERO)
             {
-                exec_data.is_jump_if_zero = true;
+                data.is_jump_if_zero = true;
             }
-            if (exec_data.current_instruction == TOKEN_JUMP_IF_NOT_ZERO)
+            if (data.current_instruction == TOKEN_JUMP_IF_NOT_ZERO)
             {
-                exec_data.is_jump_if_not_zero = true;
+                data.is_jump_if_not_zero = true;
             }
         }
 
         // Case for "jump if zero"
         if (!status_jump_execution &&
-            exec_data.current_instruction == TOKEN_JUMP_IF_NOT_ZERO)
+            data.current_instruction == TOKEN_JUMP_IF_NOT_ZERO)
         {
-            exec_data.is_jump_if_zero = false;
+            data.is_jump_if_zero = false;
         }
         // Case for "jump if not zero"
         if (!status_jump_execution &&
-            exec_data.current_instruction == TOKEN_JUMP_IF_ZERO)
+            data.current_instruction == TOKEN_JUMP_IF_ZERO)
         {
-            exec_data.is_jump_if_not_zero = false;
+            data.is_jump_if_not_zero = false;
         }
 
-        if (exec_data.is_jump_if_not_zero)
+        if (data.is_jump_if_not_zero)
         {
-            while (exec_data.current_instruction != TOKEN_JUMP_IF_ZERO)
+            while (data.current_instruction != TOKEN_JUMP_IF_ZERO)
             {
-                exec_data.current_index--;
-                exec_data.current_instruction = exec_data.instructions[exec_data.current_index];
+                data.index_instructions--;
+                data.current_instruction = data.instructions[data.index_instructions];
             }
             // Subtract one, otherwise right token is skipped
-            exec_data.current_index--;
+            data.index_instructions--;
         }
 
     }
@@ -135,10 +140,7 @@ int main(int argc, char** argv)
     printf("\nOutput: %s", buffer_output);
 #endif
 
-    //print_list(head);
-    free_list(head);
-    free(exec_data.instructions);
-
+    free(data.instructions);
     return EXIT_SUCCESS;
 }
 

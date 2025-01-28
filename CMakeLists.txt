@@ -6,8 +6,6 @@ set(CMAKE_C_STANDARD 23)
 #set(CMAKE_C_FLAGS "-DNO_LOG")
 
 add_executable(BrainfuckInterpreter main.c
-        list.c
-        list.h
         interpreter.c
         interpreter.h
         debugger.c

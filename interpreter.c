@@ -15,11 +15,8 @@
 
 void int_to_char_array(int_array_t file_data, data_t* exec_data)
 {
-
-    *exec_data = (data_t){
-        .instructions = malloc(sizeof(char) * file_data.length),
-        .instructions_length = file_data.length,
-    };
+    exec_data->instructions = malloc(sizeof(char) * file_data.length);
+    exec_data->instructions_length = file_data.length;
 
     if (exec_data->instructions == nullptr)
     {
@@ -90,11 +87,11 @@ void read_file_in_array(FILE* fp, data_t* exec_data)
     free(file_data.instructions);
 }
 
-void clear_char_buffer(char* buffer)
+void set_array_zero(data_t* data)
 {
-    for (int i = 0; i < strlen(buffer); i++)
+    for (int i = 0; i < TAPE_SIZE - 1; i++)
     {
-        buffer[i] = 0;
+        data->tape[i] = 0;
     }
 }
 
@@ -130,96 +127,78 @@ void log_execution(const char instruction, const char* message, const int value)
 #endif
 }
 
-node_t* init_tape()
+bool process_instruction(data_t* data, const bool is_jump_active)
 {
-    node_t* head = nullptr;
-    static int index = TAPE_SIZE;
-
-    for (int i = 0; i <= TAPE_SIZE; i++)
-    {
-        node_t* tmp = create_new_node(0);
-        tmp->index = index;
-        index--;
-
-        insert_at_head(&head, tmp);
-    }
-
-    //print_list(head);
-    return head;
-}
-
-bool process_instruction(data_t* exec_data, const bool is_jump_active)
-{
-    switch (exec_data->current_instruction)
+    switch (data->current_instruction)
     {
     case TOKEN_MOVE_RIGHT:
-        move_right(exec_data->current_pos);
+        move_right(data);
         log_execution(TOKEN_MOVE_RIGHT,
-            "[moved right]", (*exec_data->current_pos)->index);
+            "[moved right]", data->tape[data->index_tape]);
         break;
 
     case TOKEN_MOVE_LEFT:
-        move_left(exec_data->current_pos);
+        move_left(data);
         log_execution(TOKEN_MOVE_LEFT,
-            "[moved left]", (*exec_data->current_pos)->index);
+            "[moved left]", data->tape[data->index_tape]);
         break;
 
     case TOKEN_DISPLAY:
         log_execution(TOKEN_DISPLAY,
-            "[output]", (*exec_data->current_pos)->value);
+            "[output]", data->tape[data->index_tape]);
         break;
 
     case TOKEN_READ:
-        read(*exec_data->current_pos);
+        read(data);
         log_execution(TOKEN_READ,
-            "[read in]", (*exec_data->current_pos)->value);
+            "[read in]", data->tape[data->index_tape]);
         break;
 
     case TOKEN_ADD_ONE:
-        add(*exec_data->current_pos);
+        add(data);
         log_execution(TOKEN_ADD_ONE,
-            "[add]", (*exec_data->current_pos)->value);
+            "[add]", data->tape[data->index_tape]);
         break;
 
     case TOKEN_SUBTRACT_ONE:
-        subtract(*exec_data->current_pos);
+        subtract(data);
         log_execution(TOKEN_SUBTRACT_ONE,
-            "[subtract]", (*exec_data->current_pos)->value);
+            "[subtract]", data->tape[data->index_tape]);
         break;
 
     case TOKEN_JUMP_IF_ZERO:
-        const bool result_if_zero = jump_if_zero(*exec_data->current_pos, is_jump_active);
+        const bool result_if_zero = jump_if_zero(data, is_jump_active);
         if (result_if_zero)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[jump start]", (*exec_data->current_pos)->index);
+            "[jump start]", data->tape[data->index_tape]);
             return true;
         }
         if (!result_if_zero && is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[r jump end]", (*exec_data->current_pos)->index);
+            "[r jump end]", data->tape[data->index_tape]);
         }
 
         break;
 
     case TOKEN_JUMP_IF_NOT_ZERO:
-        const bool result_if_not_zero = jump_if_not_zero(*exec_data->current_pos, is_jump_active);
+        const bool result_if_not_zero = jump_if_not_zero(data, is_jump_active);
         if (result_if_not_zero)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[r jump start]", (*exec_data->current_pos)->index);
+            "[r jump start]", data->tape[data->index_tape]);
             return true;
         }
         if (!result_if_not_zero && is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[jump end]", (*exec_data->current_pos)->index);
+            "[jump end]", data->tape[data->index_tape]);
         }
         break;
 
     default:
-        ERROR_PRINT("Invalid instruction occurred! -> \'%d\'", exec_data->current_instruction);
+        ERROR_PRINT("Invalid instruction occurred! -> \'%d\'", data->current_instruction);
         exit(EXIT_FAILURE);
         break;
     }
@@ -227,66 +206,66 @@ bool process_instruction(data_t* exec_data, const bool is_jump_active)
     return false;
 }
 
-void move_right(node_t** current_pos)
+void move_right(data_t* data)
 {
-    if ((*current_pos)->next == nullptr)
+    if (data->index_tape - 1 == TAPE_SIZE)
     {
-        ERROR_PRINT("Next node is nullptr! [INDEX: %d]", (*current_pos)->index);
+        ERROR_PRINT("Tape is not large enough! [INDEX: %d]", data->index_tape);
         exit(EXIT_FAILURE);
     }
-    *current_pos = (*current_pos)->next;
+    data->index_tape += 1;
 }
 
-void move_left(node_t** current_pos)
+void move_left(data_t* data)
 {
-    if ((*current_pos)->prev == nullptr)
+    if (data->index_tape == 0)
     {
-        ERROR_PRINT("Previous node is nullptr! [INDEX: %d]", (*current_pos)->index);
+        ERROR_PRINT("Index is 0! [INDEX: %d]", data->index_tape);
         exit(EXIT_FAILURE);
     }
-    *current_pos = (*current_pos)->prev;
+    data->index_tape -= 1;
 }
 
-void read(node_t* current_pos)
+void read(data_t* data)
 {
     printf("Input value: ");
-    current_pos->value = getchar() - '0';
+    data->tape[data->index_tape] = getchar() - '0';
 
     fseek(stdin,0,SEEK_END);
 }
 
-void add(node_t* current_pos)
+void add(data_t* data)
 {
-    current_pos->value += 1;
+    data->tape[data->index_tape] += 1;
 }
 
-void subtract(node_t* current_pos)
+void subtract(data_t* data)
 {
-    current_pos->value -= 1;
+    data->tape[data->index_tape] -= 1;
 }
 
-bool jump_if_zero(node_t* current_pos, const bool is_jump_active)
+bool jump_if_zero(data_t* data, const bool is_jump_active)
 {
     if (is_jump_active)
     {
         return false;
     }
 
-    if (current_pos->value == 0)
+    if (data->tape[data->index_tape] == 0)
     {
         return true;
     }
     return false;
 }
 
-bool jump_if_not_zero(node_t* current_pos, const bool is_jump_active)
+bool jump_if_not_zero(data_t* data, const bool is_jump_active)
 {
     if (is_jump_active)
     {
         return false;
     }
 
-    if (current_pos->value != 0)
+    if (data->tape[data->index_tape] != 0)
     {
         return true;
     }

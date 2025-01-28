@@ -5,8 +5,6 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 
-#include "list.h"
-
 #define TAPE_SIZE                 30000 // Fixed tape size for list
 #define STEP_SIZE                 1000  //Defines in which step the size of file_data_size is increased
 
@@ -36,13 +34,14 @@ typedef struct int_array
 
 typedef struct data
 {
-    node_t** current_pos;
+    int* tape;
+    int index_tape;
 
     bool is_jump_if_zero;
     bool is_jump_if_not_zero;
 
     char* instructions;
-    int current_index;
+    int index_instructions;
     int instructions_length;
     char current_instruction;
 }data_t;
@@ -53,21 +52,20 @@ void calculate_size(int_array_t* file_data);
 void allocate_space(int_array_t* file_data);
 void realloc_space(int_array_t* file_data);
 void read_file_in_array(FILE* fp, data_t* exec_data);
-void clear_char_buffer(char* buffer);
+void set_array_zero(data_t* data);
 
 void log_execution(char instruction, const char* message, int value);
 
-node_t* init_tape();
-bool process_instruction(data_t* exec_data, bool is_jump_active);
+bool process_instruction(data_t* data, bool is_jump_active);
 
-void move_right(node_t** current_pos);
-void move_left(node_t** current_pos);
-void read(node_t* current_pos);
-void add(node_t* current_pos);
-void subtract(node_t* current_pos);
+void move_right(data_t* data);
+void move_left(data_t* data);
+void read(data_t* data);
+void add(data_t* data);
+void subtract(data_t* data);
 
-bool jump_if_zero(node_t* current_pos, bool is_jump_active);
-bool jump_if_not_zero(node_t* current_pos, bool is_jump_active);
+bool jump_if_zero(data_t* data, bool is_jump_active);
+bool jump_if_not_zero(data_t* data, bool is_jump_active);
 
 #endif //INTERPRETER_H
 

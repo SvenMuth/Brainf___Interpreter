@@ -24,7 +24,7 @@ void debug(data_t debug_info)
 
     print_debug_code(&debug_info);
     print_status(&debug_info, step);
-    print_tape_section(*debug_info.current_pos);
+    print_tape_section(&debug_info);
     input_amount_of_instructions_to_skip(&instructions_till_print_info, &step);
 
     fseek(stdin,0,SEEK_END);
@@ -33,7 +33,7 @@ void debug(data_t debug_info)
 
 void calculate_range_of_code_to_print(int* range_negative, int* range_positive, data_t* debug_info)
 {
-    int range_neg = debug_info->current_index - 200;
+    int range_neg = debug_info->index_instructions - 200;
     int range_pos = 0;
 
     if (range_neg < 0)
@@ -75,7 +75,7 @@ void print_debug_code(data_t* debug_info)
     printf(YELLOW "%d\n" RESET_COLOR, range_negative);
     while (range_negative < range_positive)
     {
-        if (debug_info->current_index == range_negative)
+        if (debug_info->index_instructions == range_negative)
         {
             printf(HI_RED "%c" RESET_COLOR, debug_info->instructions[range_negative]);
             range_negative++;
@@ -96,7 +96,7 @@ void print_status(data_t* debug_info, const long step)
 
     printf(BLUE "INSTRUCTION: " RESET_COLOR);
 
-    switch (debug_info->instructions[debug_info->current_index])
+    switch (debug_info->instructions[debug_info->index_instructions])
     {
 
     case TOKEN_MOVE_RIGHT: printf("MOVE RIGHT"); break;
@@ -109,91 +109,78 @@ void print_status(data_t* debug_info, const long step)
     case TOKEN_JUMP_IF_NOT_ZERO: printf("JUMP IF NOT ZERO"); break;
     default:
         ERROR_PRINT("Invalid instruction occurred! -> \'%d\'",
-            debug_info->instructions[debug_info->current_index]);
+            debug_info->instructions[debug_info->index_instructions]);
         exit(EXIT_FAILURE);
         break;
     }
 
     printf(BLUE "\nINDEX: " RESET_COLOR);
-    printf("%d", (*debug_info->current_pos)->index);
+    printf("%d", debug_info->index_instructions);
 
-    if (debug_info->instructions[debug_info->current_index] == TOKEN_DISPLAY)
+    if (debug_info->instructions[debug_info->index_instructions] == TOKEN_DISPLAY)
     {
         printf(HI_MAGENTA "\tVALUE: %d -> \'%c\'\n\n" RESET_COLOR,
-            (*debug_info->current_pos)->value, (char)(*debug_info->current_pos)->value);
+            debug_info->tape[debug_info->index_tape], (char)debug_info->tape[debug_info->index_tape]);
     }
     else
     {
         printf(BLUE "\tVALUE: " RESET_COLOR);
-        printf("%d\n\n", (*debug_info->current_pos)->value);
+        printf("%d\n\n", debug_info->tape[debug_info->index_tape]);
     }
 }
 
-void print_tape_section(node_t* current_pos)
+void print_tape_section(data_t* debug_info)
 {
     //Try to go back five nodes
-    int counter = 0;
-    node_t* tmp = current_pos;
-    node_t* backup_tmp;
-    while (tmp != nullptr)
+    int start = debug_info->index_tape - 5;
+    int end = 0;
+    if (start < 0)
     {
-        if (counter == 5)
-        {
-            break;
-        }
-        counter++;
-
-        backup_tmp = tmp;
-        tmp = tmp->prev;
-        if (tmp == nullptr)
-        {
-            tmp = backup_tmp;
-            break;
-        }
+        start = 0;
     }
+
+    end += start + 5;
+
+    if (end >= TAPE_SIZE)
+    {
+        end = TAPE_SIZE - 1;
+    }
+
+    int tmp_start = start;
+    int tmp_end = end;
 
     printf("Neighbors of current position on tape from [-5] to [+5] (if possible):\n");
     printf(BLUE "INDEX:\t" RESET_COLOR);
 
     // Print indexes
-    counter = 0;
-    backup_tmp = tmp;
-    while (counter != 11 && tmp != nullptr)
+    for (; tmp_start <= tmp_end; tmp_start++)
     {
-        if (current_pos->index == tmp->index)
+        if (debug_info->index_tape == tmp_start)
         {
-            printf(RED "%-3d" RESET_COLOR, tmp->index);
+            printf(RED "%-3d" RESET_COLOR, start);
             printf(" | ");
         }
         else
         {
-            printf("%-3d | ", tmp->index);
+            printf("%-3d | ", start);
         }
-
-        tmp = tmp->next;
-        counter++;
     }
 
     printf("\n");
     printf(BLUE "VALUE:\t" RESET_COLOR);
 
     // Print values
-    counter = 0;
-    tmp = backup_tmp;
-    while (counter != 11 && tmp != nullptr)
+    for (; start <= end; start++)
     {
-        if (tmp->value != 0)
+        if (debug_info->tape[start] != 0)
         {
-            printf(MAGENTA "%-3d" RESET_COLOR, tmp->value);
+            printf(MAGENTA "%-3d" RESET_COLOR, debug_info->tape[start]);
             printf(" | ");
         }
         else
         {
-            printf("%-3d | ", tmp->value);
+            printf("%-3d | ", debug_info->tape[start]);
         }
-
-        tmp = tmp->next;
-        counter++;
     }
 
     printf("\n\n");
