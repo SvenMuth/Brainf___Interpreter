@@ -127,7 +127,7 @@ void log_execution(const char instruction, const char* message, const int value)
 #endif
 }
 
-bool process_instruction(data_t* data, const bool is_jump_active)
+bool process_instruction(data_t* data, bool is_jump_active)
 {
     switch (data->current_instruction)
     {
@@ -210,7 +210,7 @@ void move_right(data_t* data)
 {
     if (data->pos_tape == data->tape_length)
     {
-        ERROR_PRINT("Tape is not large enough! [INDEX: %d]", data->pos_tape);
+        ERROR_PRINT("Tape is not large enough! [INDEX: %ld]", data->pos_tape);
         exit(EXIT_FAILURE);
     }
     data->pos_tape += 1;
@@ -220,7 +220,7 @@ void move_left(data_t* data)
 {
     if (data->pos_tape == 0)
     {
-        ERROR_PRINT("Index is 0! [INDEX: %d]", data->pos_tape);
+        ERROR_PRINT("Index is 0! [INDEX: %ld]", data->pos_tape);
         exit(EXIT_FAILURE);
     }
     data->pos_tape -= 1;
@@ -294,7 +294,8 @@ void print_log_header()
 void initialize_exec_data(data_t* data)
 {
     *data = (data_t) {
-        .tape = malloc(sizeof(int) * TAPE_SIZE),
+        //.tape = malloc(sizeof(int) * TAPE_SIZE),
+        .tape = calloc(TAPE_SIZE,sizeof(u_int8_t)),
         .pos_tape = 0,
         .tape_length = TAPE_SIZE - 1,
         .is_jump_if_zero = false,
@@ -311,7 +312,7 @@ void initialize_exec_data(data_t* data)
         exit(EXIT_FAILURE);
     }
 
-    set_array_zero(data);
+    //set_array_zero(data);
 }
 
 bool run_jump_if_zero(const data_t* data)
@@ -323,19 +324,7 @@ bool run_jump_if_zero(const data_t* data)
     return false;
 }
 
-void run_jump_if_not_zero(data_t* data)
-{
-    if (data->is_jump_if_not_zero)
-    {
-        while (data->current_instruction != TOKEN_JUMP_IF_ZERO)
-        {
-            data->pos_instructions--;
-            data->current_instruction = data->instructions[data->pos_instructions];
-        }
-        // Subtract one, otherwise right token is skipped
-        data->pos_instructions--;
-    }
-}
+
 
 void set_is_jump(data_t* data, const bool status_jump_execution)
 {
@@ -365,6 +354,20 @@ void reset_is_jump(data_t* data, const bool status_jump_execution)
         data->current_instruction == TOKEN_JUMP_IF_ZERO)
     {
         data->is_jump_if_not_zero = false;
+    }
+}
+
+void run_jump_if_not_zero(data_t* data)
+{
+    if (data->is_jump_if_not_zero)
+    {
+        while (data->current_instruction != TOKEN_JUMP_IF_ZERO)
+        {
+            data->pos_instructions--;
+            data->current_instruction = data->instructions[data->pos_instructions];
+        }
+        // Subtract one, otherwise right token is skipped
+        data->pos_instructions--;
     }
 }
 

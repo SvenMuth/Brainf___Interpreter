@@ -66,14 +66,13 @@ int main(int argc, char** argv)
             buffer_output[buffer_output_index] = (char)data.tape[data.pos_tape];
             buffer_output_index++;
 #else
-            printf("%c", (char)current_node->value);
+            printf("%c", (char)data.tape[data.pos_tape]);
 #endif
         }
 
-        run_jump_if_zero(&data);
-        run_jump_if_not_zero(&data);
         set_is_jump(&data, status_jump_execution);
         reset_is_jump(&data, status_jump_execution);
+        run_jump_if_not_zero(&data);
     }
 
 
