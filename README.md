@@ -4,7 +4,10 @@ An interpreter for Brainfuck. Currently in progress.
 
 Only tested on Linux.
 
-Updates: 
+## Usage
+    ./BrainfuckInterpreter file
+
+## Updates: 
 
 - Hello World Code is running now
 - Implemented basic debugger (Flag -DDEBUG)
