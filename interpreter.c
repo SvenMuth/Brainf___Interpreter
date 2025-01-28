@@ -13,35 +13,33 @@
 #endif
 
 
-char_array_t int_to_char_array(file_data_t file_data_int_array)
+void int_to_char_array(int_array_t file_data, data_t* exec_data)
 {
 
-    char_array_t file_data_char_array = {
-        .instructions = malloc(sizeof(char) * file_data_int_array.length),
-        .length = file_data_int_array.length,
+    *exec_data = (data_t){
+        .instructions = malloc(sizeof(char) * file_data.length),
+        .instructions_length = file_data.length,
     };
 
-    if (file_data_char_array.instructions == nullptr)
+    if (exec_data->instructions == nullptr)
     {
         ERROR_PRINT("Memory allocation failed!");
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i < file_data_int_array.length; i++)
+    for (int i = 0; i < file_data.length; i++)
     {
-        file_data_char_array.instructions[i] = (char)file_data_int_array.instructions[i];
+        exec_data->instructions[i] = (char)file_data.instructions[i];
     }
-
-    return file_data_char_array;
 }
 
-void calculate_size(file_data_t* file_data)
+void calculate_size(int_array_t* file_data)
 {
     file_data->size = file_data->step * file_data->multiplicator;
     file_data->multiplicator++;
 }
 
-void allocate_space(file_data_t* file_data)
+void allocate_space(int_array_t* file_data)
 {
     calculate_size(file_data);
 
@@ -53,7 +51,7 @@ void allocate_space(file_data_t* file_data)
     }
 }
 
-void realloc_space(file_data_t* file_data)
+void realloc_space(int_array_t* file_data)
 {
     calculate_size(file_data);
 
@@ -65,33 +63,31 @@ void realloc_space(file_data_t* file_data)
     }
 }
 
-char_array_t read_file_in_array(FILE* fp)
+void read_file_in_array(FILE* fp, data_t* exec_data)
 {
-    file_data_t file_data_int_array = {
+    int_array_t file_data = {
         .length = 0,
         .multiplicator = 1,
         .step = STEP_SIZE,
     };
-    allocate_space(&file_data_int_array);
+    allocate_space(&file_data);
 
     int c;
     while ((c = fgetc(fp)) != EOF)
     {
         // When writing directly to a char array the file pointer was getting corrupted
-        file_data_int_array.instructions[file_data_int_array.length] = c;
-        file_data_int_array.length++;
+        file_data.instructions[file_data.length] = c;
+        file_data.length++;
 
-        if ((file_data_int_array.length + 1) % STEP_SIZE == 0)
+        if ((file_data.length + 1) % STEP_SIZE == 0)
         {
-            realloc_space(&file_data_int_array);
+            realloc_space(&file_data);
         }
     }
 
     // That is why conversion is done here
-    char_array_t file_data_as_char = int_to_char_array(file_data_int_array);
-    free(file_data_int_array.instructions);
-
-    return file_data_as_char;
+    int_to_char_array(file_data, exec_data);
+    free(file_data.instructions);
 }
 
 void clear_char_buffer(char* buffer)
@@ -152,78 +148,78 @@ node_t* init_tape()
     return head;
 }
 
-bool process_instruction(const char instruction, node_t** current_pos, const bool is_jump_active)
+bool process_instruction(data_t* exec_data, const bool is_jump_active)
 {
-    switch (instruction)
+    switch (exec_data->current_instruction)
     {
     case TOKEN_MOVE_RIGHT:
-        move_right(current_pos);
+        move_right(exec_data->current_pos);
         log_execution(TOKEN_MOVE_RIGHT,
-            "[moved right]", (*current_pos)->index);
+            "[moved right]", (*exec_data->current_pos)->index);
         break;
 
     case TOKEN_MOVE_LEFT:
-        move_left(current_pos);
+        move_left(exec_data->current_pos);
         log_execution(TOKEN_MOVE_LEFT,
-            "[moved left]", (*current_pos)->index);
+            "[moved left]", (*exec_data->current_pos)->index);
         break;
 
     case TOKEN_DISPLAY:
         log_execution(TOKEN_DISPLAY,
-            "[output]", (*current_pos)->value);
+            "[output]", (*exec_data->current_pos)->value);
         break;
 
     case TOKEN_READ:
-        read(*current_pos);
+        read(*exec_data->current_pos);
         log_execution(TOKEN_READ,
-            "[read in]", (*current_pos)->value);
+            "[read in]", (*exec_data->current_pos)->value);
         break;
 
     case TOKEN_ADD_ONE:
-        add(*current_pos);
+        add(*exec_data->current_pos);
         log_execution(TOKEN_ADD_ONE,
-            "[add]", (*current_pos)->value);
+            "[add]", (*exec_data->current_pos)->value);
         break;
 
     case TOKEN_SUBTRACT_ONE:
-        subtract(*current_pos);
+        subtract(*exec_data->current_pos);
         log_execution(TOKEN_SUBTRACT_ONE,
-            "[subtract]", (*current_pos)->value);
+            "[subtract]", (*exec_data->current_pos)->value);
         break;
 
     case TOKEN_JUMP_IF_ZERO:
-        const bool result_if_zero = jump_if_zero(*current_pos, is_jump_active);
+        const bool result_if_zero = jump_if_zero(*exec_data->current_pos, is_jump_active);
         if (result_if_zero)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[jump start]", (*current_pos)->index);
+            "[jump start]", (*exec_data->current_pos)->index);
             return true;
         }
         if (!result_if_zero && is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[r jump end]", (*current_pos)->index);
+            "[r jump end]", (*exec_data->current_pos)->index);
         }
 
         break;
 
     case TOKEN_JUMP_IF_NOT_ZERO:
-        const bool result_if_not_zero = jump_if_not_zero(*current_pos, is_jump_active);
+        const bool result_if_not_zero = jump_if_not_zero(*exec_data->current_pos, is_jump_active);
         if (result_if_not_zero)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[r jump start]", (*current_pos)->index);
+            "[r jump start]", (*exec_data->current_pos)->index);
             return true;
         }
         if (!result_if_not_zero && is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[jump end]", (*current_pos)->index);
+            "[jump end]", (*exec_data->current_pos)->index);
         }
         break;
 
     default:
-        ERROR_PRINT("Invalid instruction occurred! -> \'%d\'", instruction);
+        ERROR_PRINT("Invalid instruction occurred! -> \'%d\'", exec_data->current_instruction);
         exit(EXIT_FAILURE);
         break;
     }

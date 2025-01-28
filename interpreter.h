@@ -24,13 +24,7 @@
 #define ERROR_PRINT(args ...)     fprintf(stderr, args)
 
 
-typedef struct char_array
-{
-    char* instructions;
-    int length;
-} char_array_t;
-
-typedef struct file_data
+typedef struct int_array
 {
     int* instructions;
     int size;
@@ -38,21 +32,33 @@ typedef struct file_data
 
     const int step;
     int multiplicator;
-} file_data_t;
+}int_array_t;
 
+typedef struct data
+{
+    node_t** current_pos;
 
-char_array_t int_to_char_array(file_data_t file_data_int_array);
+    bool is_jump_if_zero;
+    bool is_jump_if_not_zero;
 
-void calculate_size(file_data_t* file_data);
-void allocate_space(file_data_t* file_data);
-void realloc_space(file_data_t* file_data);
-char_array_t read_file_in_array(FILE* fp);
+    char* instructions;
+    int current_index;
+    int instructions_length;
+    char current_instruction;
+}data_t;
+
+void int_to_char_array(int_array_t file_data, data_t* exec_data);
+
+void calculate_size(int_array_t* file_data);
+void allocate_space(int_array_t* file_data);
+void realloc_space(int_array_t* file_data);
+void read_file_in_array(FILE* fp, data_t* exec_data);
 void clear_char_buffer(char* buffer);
 
-void log_execution(char instruction, const char* message, const int value);
+void log_execution(char instruction, const char* message, int value);
 
 node_t* init_tape();
-bool process_instruction(char instruction, node_t** current_pos, bool is_jump_active);
+bool process_instruction(data_t* exec_data, bool is_jump_active);
 
 void move_right(node_t** current_pos);
 void move_left(node_t** current_pos);
