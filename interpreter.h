@@ -40,6 +40,7 @@ typedef struct file_data
     int multiplicator;
 } file_data_t;
 
+
 char_array_t int_to_char_array(file_data_t file_data_int_array);
 
 void calculate_size(file_data_t* file_data);
@@ -63,3 +64,15 @@ bool jump_if_zero(node_t* current_pos, bool is_jump_active);
 bool jump_if_not_zero(node_t* current_pos, bool is_jump_active);
 
 #endif //INTERPRETER_H
+
+
+
+
+
+
+
+
+
+
+
+

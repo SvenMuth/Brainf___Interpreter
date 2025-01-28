@@ -6,8 +6,8 @@
 #include <stdlib.h>
 
 #include "list.h"
-
 #include "interpreter.h"
+
 
 node_t* create_new_node(const int value)
 {

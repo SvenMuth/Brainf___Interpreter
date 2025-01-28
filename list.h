@@ -13,6 +13,7 @@ typedef struct node
     struct node* prev;
 } node_t;
 
+
 node_t* create_new_node(const int value);
 node_t* insert_at_head(node_t** head, node_t* node_to_insert);
 void insert_after_node(node_t* node_to_insert_after, node_t* new_node);
@@ -25,3 +26,16 @@ void print_value(node_t* head);
 void print_index(node_t* head);
 
 #endif //LIST_H
+
+
+
+
+
+
+
+
+
+
+
+
+

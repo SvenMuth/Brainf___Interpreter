@@ -77,7 +77,7 @@ char_array_t read_file_in_array(FILE* fp)
     int c;
     while ((c = fgetc(fp)) != EOF)
     {
-        //Add everything to buffer
+        // When writing directly to a char array the file pointer was getting corrupted
         file_data_int_array.instructions[file_data_int_array.length] = c;
         file_data_int_array.length++;
 
@@ -87,6 +87,7 @@ char_array_t read_file_in_array(FILE* fp)
         }
     }
 
+    // That is why conversion is done here
     char_array_t file_data_as_char = int_to_char_array(file_data_int_array);
     free(file_data_int_array.instructions);
 
@@ -103,8 +104,8 @@ void clear_char_buffer(char* buffer)
 
 void log_execution(const char instruction, const char* message, const int value)
 {
-#ifdef DEBUG
-    //Dont print log while debugging
+#if defined(DEBUG) || defined(NO_LOG)
+    //Dont print log while debugging or no_log
 #else
     //TODO: Implement better format specifiers
     static int counter = 1;
