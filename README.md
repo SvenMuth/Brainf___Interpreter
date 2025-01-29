@@ -1,16 +1,16 @@
 # BrainfuckInterpreter in C
 
-An interpreter for Brainfuck. Currently in progress.
-
-Only tested on Linux.
+An interpreter for Brainfuck. Only tested on Linux.
 
 ## Usage
-    ./BrainfuckInterpreter file
+    ./brainfuck [-RUNNING_MODE] filename
+                 -DEBUG     Run debug mode
+                 -NO_LOG    Only print output without execution logging
 
-## Updates: 
+## Building
 
-- Hello World Code is running now
-- Implemented basic debugger (Flag -DDEBUG)
-- Implemented NO_LOG option (Flag -DNO_LOG)
-  - Write output directly to console without any logging
+    $ mkdir build
+    $ cd build
+    $ cmake ..
+    $ make
 
