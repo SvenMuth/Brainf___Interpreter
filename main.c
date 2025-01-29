@@ -30,12 +30,12 @@ int main(int argc, char** argv)
     printf("Output: ");
 #endif
 
-    for (; data.pos_instructions < data.instructions_length; data.pos_instructions++)
+    for (; data.pos_orders < data.orders_length; data.pos_orders++)
     {
-        data.current_instruction = data.instructions[data.pos_instructions];
+        //data.current_instruction = data.orders[data.pos_orders];
 
-        if (data.current_instruction == NEW_LINE
-            || data.current_instruction == SPACE_KEY)
+        if (data.orders[data.pos_orders] == NEW_LINE
+            || data.orders[data.pos_orders] == SPACE_KEY)
         {
             continue;
         }
@@ -51,11 +51,10 @@ int main(int argc, char** argv)
             process_instruction(&data, is_jump_active);
 
 #ifdef DEBUG
-        debug(data);
+        debug(&data);
 #endif
 
-
-        if (data.current_instruction == TOKEN_DISPLAY)
+        if (data.orders[data.pos_orders] == TOKEN_DISPLAY)
         {
 #ifndef NO_LOG
             if (buffer_output_index == BUFFER_SIZE - 1)
@@ -81,7 +80,7 @@ int main(int argc, char** argv)
     printf("\nOutput: %s", buffer_output);
 #endif
 
-    free(data.instructions);
+    free(data.orders);
     return EXIT_SUCCESS;
 }
 

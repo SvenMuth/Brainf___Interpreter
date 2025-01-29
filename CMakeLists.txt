@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.30)
 project(BrainfuckInterpreter C)
 
 set(CMAKE_C_STANDARD 23)
+
 set(CMAKE_C_FLAGS "-DDEBUG")
 #set(CMAKE_C_FLAGS "-DNO_LOG")
 

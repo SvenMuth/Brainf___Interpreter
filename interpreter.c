@@ -4,21 +4,18 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "interpreter.h"
-
-#ifndef DEBUG
 #include "colors.h"
-#endif
+
 
 
 void int_to_char_array(int_array_t file_data, data_t* exec_data)
 {
-    exec_data->instructions = malloc(sizeof(char) * file_data.length);
-    exec_data->instructions_length = file_data.length;
+    exec_data->orders = malloc(sizeof(char) * file_data.length);
+    exec_data->orders_length = file_data.length;
 
-    if (exec_data->instructions == nullptr)
+    if (exec_data->orders == nullptr)
     {
         ERROR_PRINT("Memory allocation failed!");
         exit(EXIT_FAILURE);
@@ -26,7 +23,7 @@ void int_to_char_array(int_array_t file_data, data_t* exec_data)
 
     for (int i = 0; i < file_data.length; i++)
     {
-        exec_data->instructions[i] = (char)file_data.instructions[i];
+        exec_data->orders[i] = (char)file_data.instructions[i];
     }
 }
 
@@ -89,13 +86,13 @@ void read_file_in_array(FILE* fp, data_t* exec_data)
 
 void set_array_zero(const data_t* data)
 {
-    for (int i = 0; i < data->tape_length; i++)
+    for (long i = 0; i < data->tape_length; i++)
     {
         data->tape[i] = 0;
     }
 }
 
-void log_execution(const char instruction, const char* message, const int value)
+void log_execution(const char instruction, const char* message, const long value)
 {
 #if defined(DEBUG) || defined(NO_LOG)
     //Dont print log while debugging or no_log
@@ -104,22 +101,22 @@ void log_execution(const char instruction, const char* message, const int value)
     static int counter = 1;
     if (instruction == TOKEN_ADD_ONE || instruction == TOKEN_MOVE_RIGHT)
     {
-        printf("(%d) \t \'%c\' %-18s [%d -> %d]\n",
+        printf("(%d) \t \'%c\' %-18s [%ld -> %ld]\n",
             counter, instruction, message, (value - 1), value);
     }
     else if (instruction == TOKEN_SUBTRACT_ONE || instruction == TOKEN_MOVE_LEFT)
     {
-        printf("(%d) \t \'%c\' %-18s [%d -> %d]\n",
+        printf("(%d) \t \'%c\' %-18s [%ld -> %ld]\n",
             counter, instruction, message, (value + 1), value);
     }
     else if (instruction == TOKEN_DISPLAY)
     {
-        printf(HI_MAGENTA "(%d) \t \'%c\' %-18s [%d -> \'%c\']\n" RESET_COLOR,
+        printf(HI_MAGENTA "(%d) \t \'%c\' %-18s [%ld -> \'%c\']\n" RESET_COLOR,
             counter, instruction, message, value, (char)value);
     }
     else
     {
-        printf("(%d) \t \'%c\' %-18s %d\n",
+        printf("(%d) \t \'%c\' %-18s %ld\n",
             counter, instruction, message, value);
     }
 
@@ -129,18 +126,18 @@ void log_execution(const char instruction, const char* message, const int value)
 
 bool process_instruction(data_t* data, bool is_jump_active)
 {
-    switch (data->current_instruction)
+    switch (data->orders[data->pos_orders])
     {
     case TOKEN_MOVE_RIGHT:
         move_right(data);
         log_execution(TOKEN_MOVE_RIGHT,
-            "[moved right]", data->tape[data->pos_tape]);
+            "[moved right]", data->pos_tape);
         break;
 
     case TOKEN_MOVE_LEFT:
         move_left(data);
         log_execution(TOKEN_MOVE_LEFT,
-            "[moved left]", data->tape[data->pos_tape]);
+            "[moved left]", data->pos_tape);
         break;
 
     case TOKEN_DISPLAY:
@@ -171,13 +168,13 @@ bool process_instruction(data_t* data, bool is_jump_active)
         if (result_if_zero)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[jump start]", data->tape[data->pos_tape]);
+            "[jump start]", data->pos_tape);
             return true;
         }
-        if (!result_if_zero && is_jump_active)
+        if (is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[r jump end]", data->tape[data->pos_tape]);
+            "[r jump end]", data->pos_tape);
         }
 
         break;
@@ -187,18 +184,18 @@ bool process_instruction(data_t* data, bool is_jump_active)
         if (result_if_not_zero)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[r jump start]", data->tape[data->pos_tape]);
+            "[r jump start]", data->pos_tape);
             return true;
         }
-        if (!result_if_not_zero && is_jump_active)
+        if (is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[jump end]", data->tape[data->pos_tape]);
+            "[jump end]", data->pos_tape);
         }
         break;
 
     default:
-        ERROR_PRINT("Invalid instruction occurred! -> \'%d\'", data->current_instruction);
+        ERROR_PRINT("Invalid instruction occurred! -> \'%d\'", data->orders[data->pos_orders]);
         exit(EXIT_FAILURE);
         break;
     }
@@ -294,16 +291,14 @@ void print_log_header()
 void initialize_exec_data(data_t* data)
 {
     *data = (data_t) {
-        //.tape = malloc(sizeof(int) * TAPE_SIZE),
-        .tape = calloc(TAPE_SIZE,sizeof(u_int8_t)),
+        .tape = calloc(TAPE_SIZE, sizeof(u_int8_t)),
         .pos_tape = 0,
         .tape_length = TAPE_SIZE - 1,
         .is_jump_if_zero = false,
         .is_jump_if_not_zero = false,
-        .instructions = nullptr,
-        .pos_instructions = 0,
-        .instructions_length = 0,
-        .current_instruction = 0,
+        .orders = nullptr,
+        .pos_orders = 0,
+        .orders_length = 0,
     };
 
     if (data->tape == nullptr)
@@ -311,13 +306,12 @@ void initialize_exec_data(data_t* data)
         ERROR_PRINT("Memory allocation failed!");
         exit(EXIT_FAILURE);
     }
-
-    //set_array_zero(data);
+    printf("Memory allocation for tape successful!\n\n");
 }
 
 bool run_jump_if_zero(const data_t* data)
 {
-    if (data->is_jump_if_zero && data->current_instruction != TOKEN_JUMP_IF_NOT_ZERO)
+    if (data->is_jump_if_zero && data->orders[data->pos_orders] != TOKEN_JUMP_IF_NOT_ZERO)
     {
         return true;
     }
@@ -325,16 +319,15 @@ bool run_jump_if_zero(const data_t* data)
 }
 
 
-
 void set_is_jump(data_t* data, const bool status_jump_execution)
 {
     if (status_jump_execution)
     {
-        if (data->current_instruction == TOKEN_JUMP_IF_ZERO)
+        if (data->orders[data->pos_orders] == TOKEN_JUMP_IF_ZERO)
         {
             data->is_jump_if_zero = true;
         }
-        if (data->current_instruction == TOKEN_JUMP_IF_NOT_ZERO)
+        if (data->orders[data->pos_orders] == TOKEN_JUMP_IF_NOT_ZERO)
         {
             data->is_jump_if_not_zero = true;
         }
@@ -345,13 +338,13 @@ void reset_is_jump(data_t* data, const bool status_jump_execution)
 {
     // Case for "jump if zero"
     if (!status_jump_execution &&
-        data->current_instruction == TOKEN_JUMP_IF_NOT_ZERO)
+        data->orders[data->pos_orders] == TOKEN_JUMP_IF_NOT_ZERO)
     {
         data->is_jump_if_zero = false;
     }
     // Case for "jump if not zero"
     if (!status_jump_execution &&
-        data->current_instruction == TOKEN_JUMP_IF_ZERO)
+        data->orders[data->pos_orders] == TOKEN_JUMP_IF_ZERO)
     {
         data->is_jump_if_not_zero = false;
     }
@@ -361,13 +354,13 @@ void run_jump_if_not_zero(data_t* data)
 {
     if (data->is_jump_if_not_zero)
     {
-        while (data->current_instruction != TOKEN_JUMP_IF_ZERO)
+        while (data->orders[data->pos_orders] != TOKEN_JUMP_IF_ZERO)
         {
-            data->pos_instructions--;
-            data->current_instruction = data->instructions[data->pos_instructions];
+            data->pos_orders--;
+            data->orders[data->pos_orders] = data->orders[data->pos_orders];
         }
         // Subtract one, otherwise right token is skipped
-        data->pos_instructions--;
+        data->pos_orders--;
     }
 }
 

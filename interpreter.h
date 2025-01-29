@@ -5,8 +5,8 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 
-#define TAPE_SIZE                 6000000000 //For executing Mandelbrot.bf
-//#define TAPE_SIZE                 30000 // Fixed tape size for list
+//#define TAPE_SIZE                 6000000000 //For executing Mandelbrot.bf (Interpreter to slow currently)
+#define TAPE_SIZE                 30000 // Fixed tape size for list
 #define STEP_SIZE                 1000  //Defines in which step the size of file_data_size is increased
 #define BUFFER_SIZE               1000  //Output buffer
 
@@ -26,7 +26,7 @@
 
 typedef struct int_array
 {
-    u_int8_t* instructions;
+    int* instructions;
     int size;
     int length;
 
@@ -36,19 +36,16 @@ typedef struct int_array
 
 typedef struct data
 {
-    int* tape;
-    //int pos_tape;
-    //int tape_length;
+    u_int8_t* tape;
     long pos_tape;
     long tape_length;
 
     bool is_jump_if_zero;
     bool is_jump_if_not_zero;
 
-    char* instructions;
-    int pos_instructions;
-    int instructions_length;
-    char current_instruction;
+    char* orders;
+    int pos_orders;
+    int orders_length;
 }data_t;
 
 
@@ -60,7 +57,7 @@ void realloc_space(int_array_t* file_data);
 void read_file_in_array(FILE* fp, data_t* exec_data);
 void set_array_zero(const data_t* data);
 
-void log_execution(char instruction, const char* message, int value);
+void log_execution(char instruction, const char* message, long value);
 
 bool process_instruction(data_t* data, bool is_jump_active);
 
