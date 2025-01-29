@@ -5,8 +5,8 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 
-//#define TAPE_SIZE                 6000000000 //For executing Mandelbrot.bf (Interpreter to slow currently)
-#define TAPE_SIZE                 30000 //Fixed tape size for list
+#define TAPE_SIZE                 6000000000 //For executing Mandelbrot.bf (Interpreter to slow currently)
+//#define TAPE_SIZE                 30000 //Fixed tape size for list
 #define STEP_SIZE                 1000  //Defines in which step the size of file_data_size is increased
 #define BUFFER_SIZE               1000  //Output buffer
 
@@ -30,7 +30,7 @@ typedef enum RUNNING_MODE
     DEFAULT,
 }RUNNING_MODE;
 
-static const char* MODE_STR[] = {
+static const char* RUNNING_MODE_STR[] = {
     [DEBUG] = "-DEBUG",
     [NO_LOG] = "-NO_LOG"
 };
@@ -57,6 +57,8 @@ typedef struct data
     char* orders;
     int pos_orders;
     int orders_length;
+
+    int pos_last_jump_if_zero_order;
 }data_t;
 
 
@@ -86,7 +88,7 @@ bool jump_if_not_zero(const data_t* data, bool is_jump_active);
 FILE* open_file(const char* filename);
 
 void print_log_header(RUNNING_MODE running_mode);
-void initialize_exec_data(data_t* data);
+void initialize_data(data_t* data);
 
 bool run_jump_if_zero(const data_t* data);
 void run_jump_if_not_zero(data_t* data);

@@ -17,12 +17,12 @@ int main(int argc, char** argv)
     }
     else if (argc == 3)
     {
-        if (strcmp(argv[1], MODE_STR[DEBUG]) == 0)
+        if (strcmp(argv[1], RUNNING_MODE_STR[DEBUG]) == 0)
         {
             running_mode = DEBUG;
             filename = argv[2];
         }
-        else if (strcmp(argv[1], MODE_STR[NO_LOG]) == 0)
+        else if (strcmp(argv[1], RUNNING_MODE_STR[NO_LOG]) == 0)
         {
             running_mode = NO_LOG;
             filename = argv[2];
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
     }
 
     data_t data;
-    initialize_exec_data(&data);
+    initialize_data(&data);
 
     FILE* fp = open_file(filename);
     read_file_in_array(fp, &data);
@@ -66,6 +66,11 @@ int main(int argc, char** argv)
             continue;
         }
 
+        if (data.orders[data.pos_orders] == TOKEN_JUMP_IF_ZERO)
+        {
+            data.pos_last_jump_if_zero_order = data.pos_orders;
+        }
+
         if (run_jump_if_zero(&data))
         {
             continue;
@@ -80,7 +85,6 @@ int main(int argc, char** argv)
         {
             debug(&data);
         }
-
 
         if (data.orders[data.pos_orders] == TOKEN_DISPLAY)
         {

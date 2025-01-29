@@ -288,7 +288,7 @@ void print_log_header(RUNNING_MODE running_mode)
     }
 }
 
-void initialize_exec_data(data_t* data)
+void initialize_data(data_t* data)
 {
     *data = (data_t) {
         .tape = calloc(TAPE_SIZE, sizeof(u_int8_t)),
@@ -299,6 +299,7 @@ void initialize_exec_data(data_t* data)
         .orders = nullptr,
         .pos_orders = 0,
         .orders_length = 0,
+        .pos_last_jump_if_zero_order = -1,
     };
 
     if (data->tape == nullptr)
@@ -353,13 +354,7 @@ void run_jump_if_not_zero(data_t* data)
 {
     if (data->is_jump_if_not_zero)
     {
-        while (data->orders[data->pos_orders] != TOKEN_JUMP_IF_ZERO)
-        {
-            data->pos_orders--;
-            data->orders[data->pos_orders] = data->orders[data->pos_orders];
-        }
-        // Subtract one, otherwise right token is skipped
-        data->pos_orders--;
+        data->pos_orders = data->pos_last_jump_if_zero_order - 1;
     }
 }
 
