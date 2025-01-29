@@ -14,3 +14,13 @@ An interpreter for Brainfuck. Only tested on Linux.
     $ cmake ..
     $ make
 
+## Pictures
+
+### Debug Mode
+
+![Auswahl_1043](https://github.com/user-attachments/assets/6c21f0f9-ea75-4a47-a439-eebf98dc5711)
+
+### Without any flags
+
+![Auswahl_1044](https://github.com/user-attachments/assets/7480f562-507e-442d-b405-d0960f0a43c0)
+
