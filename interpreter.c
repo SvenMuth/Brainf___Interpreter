@@ -9,7 +9,6 @@
 #include "colors.h"
 
 
-
 void int_to_char_array(int_array_t file_data, data_t* exec_data)
 {
     exec_data->orders = malloc(sizeof(char) * file_data.length);
