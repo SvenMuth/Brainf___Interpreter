@@ -1,39 +1,65 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "interpreter.h"
 #include "debugger.h"
 
 int main(int argc, char** argv)
 {
-    if (argc != 2)
+    const char* filename;
+    RUNNING_MODE running_mode = DEFAULT;
+
+    if (argc == 2)
+    {
+        filename = argv[1];
+    }
+    else if (argc == 3)
+    {
+        if (strcmp(argv[1], MODE_STR[DEBUG]) == 0)
+        {
+            running_mode = DEBUG;
+            filename = argv[2];
+        }
+        else if (strcmp(argv[1], MODE_STR[NO_LOG]) == 0)
+        {
+            running_mode = NO_LOG;
+            filename = argv[2];
+        }
+        else
+        {
+            ERROR_PRINT("First argument is not matching any valid running mode!");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
     {
         ERROR_PRINT("The wrong number of arguments has been passed!");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     data_t data;
     initialize_exec_data(&data);
 
-    FILE* fp = open_file(argv[1]);
+    FILE* fp = open_file(filename);
     read_file_in_array(fp, &data);
     fclose(fp);
 
-    print_log_header();
+    print_log_header(running_mode);
 
-    // When NO_LOG defined print the output directly without any logging
-#ifndef NO_LOG
     char buffer_output[BUFFER_SIZE];
     int buffer_output_index = 0;
-#else
-    printf("Output: ");
-#endif
+
+    // When NO_LOG defined print the output directly without any logging
+    if (running_mode == NO_LOG)
+    {
+        printf("Output: ");
+    }
+
 
     for (; data.pos_orders < data.orders_length; data.pos_orders++)
     {
-        //data.current_instruction = data.orders[data.pos_orders];
-
         if (data.orders[data.pos_orders] == NEW_LINE
             || data.orders[data.pos_orders] == SPACE_KEY)
         {
@@ -48,25 +74,31 @@ int main(int argc, char** argv)
 
         //return true if jump conditions are met
         const bool status_jump_execution =
-            process_instruction(&data, is_jump_active);
+            process_instruction(&data, is_jump_active, running_mode);
 
-#ifdef DEBUG
-        debug(&data);
-#endif
+        if (running_mode == DEBUG)
+        {
+            debug(&data);
+        }
+
 
         if (data.orders[data.pos_orders] == TOKEN_DISPLAY)
         {
-#ifndef NO_LOG
-            if (buffer_output_index == BUFFER_SIZE - 1)
+            if (running_mode == NO_LOG)
             {
-                ERROR_PRINT("Output size to big for buffer. Try with NO_LOG option!");
-                exit(EXIT_FAILURE);
+                printf("%c", (char)data.tape[data.pos_tape]);
             }
-            buffer_output[buffer_output_index] = (char)data.tape[data.pos_tape];
-            buffer_output_index++;
-#else
-            printf("%c", (char)data.tape[data.pos_tape]);
-#endif
+            else
+            {
+                if (buffer_output_index == BUFFER_SIZE - 1)
+                {
+                    ERROR_PRINT("Output size to big for buffer. Try with NO_LOG option!");
+                    exit(EXIT_FAILURE);
+                }
+                buffer_output[buffer_output_index] = (char)data.tape[data.pos_tape];
+                buffer_output_index++;
+            }
+
         }
 
         set_is_jump(&data, status_jump_execution);
@@ -75,10 +107,11 @@ int main(int argc, char** argv)
     }
 
 
-#ifndef NO_LOG
-    buffer_output[buffer_output_index] = 0;
-    printf("\nOutput: %s", buffer_output);
-#endif
+    if (running_mode != NO_LOG)
+    {
+        buffer_output[buffer_output_index] = 0;
+        printf("\nOutput: %s", buffer_output);
+    }
 
     free(data.orders);
     return EXIT_SUCCESS;

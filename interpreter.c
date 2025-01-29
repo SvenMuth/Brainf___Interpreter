@@ -91,75 +91,75 @@ void set_array_zero(const data_t* data)
     }
 }
 
-void log_execution(const char instruction, const char* message, const long value)
+void log_execution(const char instruction, const char* message, const long value, const RUNNING_MODE running_mode)
 {
-#if defined(DEBUG) || defined(NO_LOG)
     //Dont print log while debugging or no_log
-#else
-    //TODO: Implement better format specifiers
-    static int counter = 1;
-    if (instruction == TOKEN_ADD_ONE || instruction == TOKEN_MOVE_RIGHT)
+    if (!(running_mode == DEBUG || running_mode == NO_LOG))
     {
-        printf("(%d) \t \'%c\' %-18s [%ld -> %ld]\n",
-            counter, instruction, message, (value - 1), value);
-    }
-    else if (instruction == TOKEN_SUBTRACT_ONE || instruction == TOKEN_MOVE_LEFT)
-    {
-        printf("(%d) \t \'%c\' %-18s [%ld -> %ld]\n",
-            counter, instruction, message, (value + 1), value);
-    }
-    else if (instruction == TOKEN_DISPLAY)
-    {
-        printf(HI_MAGENTA "(%d) \t \'%c\' %-18s [%ld -> \'%c\']\n" RESET_COLOR,
-            counter, instruction, message, value, (char)value);
-    }
-    else
-    {
-        printf("(%d) \t \'%c\' %-18s %ld\n",
-            counter, instruction, message, value);
-    }
+        //TODO: Implement better format specifiers
+        static int counter = 1;
+        if (instruction == TOKEN_ADD_ONE || instruction == TOKEN_MOVE_RIGHT)
+        {
+            printf("(%d) \t \'%c\' %-18s [%ld -> %ld]\n",
+                counter, instruction, message, (value - 1), value);
+        }
+        else if (instruction == TOKEN_SUBTRACT_ONE || instruction == TOKEN_MOVE_LEFT)
+        {
+            printf("(%d) \t \'%c\' %-18s [%ld -> %ld]\n",
+                counter, instruction, message, (value + 1), value);
+        }
+        else if (instruction == TOKEN_DISPLAY)
+        {
+            printf(HI_MAGENTA "(%d) \t \'%c\' %-18s [%ld -> \'%c\']\n" RESET_COLOR,
+                counter, instruction, message, value, (char)value);
+        }
+        else
+        {
+            printf("(%d) \t \'%c\' %-18s %ld\n",
+                counter, instruction, message, value);
+        }
 
-    counter++;
-#endif
+        counter++;
+    }
 }
 
-bool process_instruction(data_t* data, bool is_jump_active)
+bool process_instruction(data_t* data, const bool is_jump_active, const RUNNING_MODE running_mode)
 {
     switch (data->orders[data->pos_orders])
     {
     case TOKEN_MOVE_RIGHT:
         move_right(data);
         log_execution(TOKEN_MOVE_RIGHT,
-            "[moved right]", data->pos_tape);
+            "[moved right]", data->pos_tape, running_mode);
         break;
 
     case TOKEN_MOVE_LEFT:
         move_left(data);
         log_execution(TOKEN_MOVE_LEFT,
-            "[moved left]", data->pos_tape);
+            "[moved left]", data->pos_tape, running_mode);
         break;
 
     case TOKEN_DISPLAY:
         log_execution(TOKEN_DISPLAY,
-            "[output]", data->tape[data->pos_tape]);
+            "[output]", data->tape[data->pos_tape],running_mode);
         break;
 
     case TOKEN_READ:
         read(data);
         log_execution(TOKEN_READ,
-            "[read in]", data->tape[data->pos_tape]);
+            "[read in]", data->tape[data->pos_tape], running_mode);
         break;
 
     case TOKEN_ADD_ONE:
         add(data);
         log_execution(TOKEN_ADD_ONE,
-            "[add]", data->tape[data->pos_tape]);
+            "[add]", data->tape[data->pos_tape], running_mode);
         break;
 
     case TOKEN_SUBTRACT_ONE:
         subtract(data);
         log_execution(TOKEN_SUBTRACT_ONE,
-            "[subtract]", data->tape[data->pos_tape]);
+            "[subtract]", data->tape[data->pos_tape], running_mode);
         break;
 
     case TOKEN_JUMP_IF_ZERO:
@@ -167,13 +167,13 @@ bool process_instruction(data_t* data, bool is_jump_active)
         if (result_if_zero)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[jump start]", data->pos_tape);
+            "[jump start]", data->pos_tape, running_mode);
             return true;
         }
         if (is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_ZERO,
-            "[r jump end]", data->pos_tape);
+            "[r jump end]", data->pos_tape, running_mode);
         }
 
         break;
@@ -183,13 +183,13 @@ bool process_instruction(data_t* data, bool is_jump_active)
         if (result_if_not_zero)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[r jump start]", data->pos_tape);
+            "[r jump start]", data->pos_tape, running_mode);
             return true;
         }
         if (is_jump_active)
         {
             log_execution(TOKEN_JUMP_IF_NOT_ZERO,
-            "[jump end]", data->pos_tape);
+            "[jump end]", data->pos_tape, running_mode);
         }
         break;
 
@@ -280,11 +280,12 @@ FILE* open_file(const char* filename)
     return fp;
 }
 
-void print_log_header()
+void print_log_header(RUNNING_MODE running_mode)
 {
-#if !defined(DEBUG) && !defined(NO_LOG)
-    printf("STEP\t INSTRUCTION\t\t\tVALUE\n");
-#endif
+    if (!(running_mode == DEBUG || running_mode == NO_LOG))
+    {
+        printf("STEP\t INSTRUCTION\t\t\tVALUE\n");
+    }
 }
 
 void initialize_exec_data(data_t* data)
@@ -305,7 +306,6 @@ void initialize_exec_data(data_t* data)
         ERROR_PRINT("Memory allocation failed!");
         exit(EXIT_FAILURE);
     }
-    printf("Memory allocation for tape successful!\n\n");
 }
 
 bool run_jump_if_zero(const data_t* data)
