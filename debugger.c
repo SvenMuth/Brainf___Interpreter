@@ -144,7 +144,7 @@ void print_tape_section(const data_t* data)
         start = 0;
     }
 
-    end += start + 5;
+    end += start + 10;
 
     if (end >= TAPE_SIZE)
     {
