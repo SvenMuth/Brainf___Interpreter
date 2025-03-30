@@ -1,6 +1,6 @@
-# BrainfuckInterpreter in C
+# Brainf___Interpreter in C
 
-An interpreter for Brainfuck. Only tested on Linux.
+An interpreter for Brainf*ck. Only tested on Linux.
 
 ## Usage
     ./BrainfuckInterpreter [RUNNING_MODE] filename
